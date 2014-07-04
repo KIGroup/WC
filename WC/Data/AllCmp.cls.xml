@@ -1,0 +1,226 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.AllCmp">
+<Super>%Persistent</Super>
+<TimeCreated>63371,1230.795883</TimeCreated>
+
+<Property name="id">
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="location">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="country">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="type">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="date">
+<Type>%String</Type>
+</Property>
+
+<Property name="age">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="discipline">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="division">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="status">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="coefficient">
+<Type>%String</Type>
+</Property>
+
+<Property name="lastmodifiedDate">
+<Type>%String</Type>
+</Property>
+
+<Property name="eventId">
+<Type>%String</Type>
+</Property>
+
+<Property name="groupId">
+<Type>%String</Type>
+</Property>
+
+<Index name="idIdx">
+<Properties>id</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>data:%RegisteredObject</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	if (..idIdxExists(data.id) = $$$YES){
+		set cmp = ..idIdxOpen(data.id)
+	}
+	else{
+		set cmp = ..%New()
+	}
+	
+	set cmp.id = data.id
+	set cmp.location = data.location
+	set cmp.country = data.country
+	set cmp.type = data.type
+	set cmp.date = data.date
+	set cmp.age = data.age
+	set cmp.discipline = data.discipline
+	set cmp.division = data.division
+	set cmp.status = data.status
+	set cmp.coefficient = data.coefficient
+	set cmp.lastmodifiedDate = data.lastmodifiedDate
+	set cmp.eventId = data.eventId
+	set cmp.groupId = data.groupId
+	quit cmp.%Save()
+]]></Implementation>
+</Method>
+
+<Method name="LoadAll">
+<Description>
+do ##class(WC.Data.AllCmp).LoadAll()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	
+	try{
+		//do ..%KillExtent()
+		//for date=56613:5:63371{
+		for date=62889:1:63371{
+			set zdateFrom = $REPLACE($ZD(date, 3), "-", "/")
+			set zdateTo = $REPLACE($ZD(date, 3), "-", "/")
+			w !,"Date "_date_", zd = "_zdateFrom_" - "_zdateTo
+			
+			set items = ##class(WC.Wdsf.API).GetCompetitions(zdateFrom, zdateTo,,,,,.st)
+				
+			if ($$$ISERR(st)) || ($CLASSNAME(items) '= "%Library.ListOfObjects") {
+				do $system.OBJ.DisplayError(st)
+				w !, "$CLASSNAME(items)="_$CLASSNAME(items)
+				do items.%ToJSON()
+				continue
+			}
+				
+			for i=1:1:items.Count(){
+				set cmpData = ##class(WC.Wdsf.API).GetCompetitionById(items.GetAt(i).id, .st)
+				
+				if $$$ISERR(st){
+					w !, "-1. i = "_i 
+					do $system.OBJ.DisplayError(st)
+					continue
+				}
+				set st = ..Save(cmpData)
+					
+				if $$$ISERR(st) {
+					w !, "-2. i = "_i 
+					do $system.OBJ.DisplayError(st)
+					continue
+				}
+			}
+		}
+	}
+	catch(ex){
+		do $system.OBJ.DisplayError(ex.AsStatus())
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+/*
+<id>44853</id>
+<location>Juzhnyj</location>
+<country>Ukraine</country>
+<type>OPEN</type>
+<date>2013-05-01T00:00:00</date>
+<age>YOUTH</age>
+<discipline>STANDARD</discipline>
+<division>General</division>
+<status>Closed</status>
+<coefficient>1.00</coefficient>
+<lastmodifiedDate>2013-05-01T22:57:20</lastmodifiedDate>
+<eventId>19271</eventId>
+<groupId>6004</groupId>
+*/
+]]></Content>
+</UDLText>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.AllCmpD</DataLocation>
+<DefaultData>AllCmpDefaultData</DefaultData>
+<IdLocation>^WC.Data.AllCmpD</IdLocation>
+<IndexLocation>^WC.Data.AllCmpI</IndexLocation>
+<StreamLocation>^WC.Data.AllCmpS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="AllCmpDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>id</Value>
+</Value>
+<Value name="3">
+<Value>location</Value>
+</Value>
+<Value name="4">
+<Value>country</Value>
+</Value>
+<Value name="5">
+<Value>type</Value>
+</Value>
+<Value name="6">
+<Value>date</Value>
+</Value>
+<Value name="7">
+<Value>age</Value>
+</Value>
+<Value name="8">
+<Value>discipline</Value>
+</Value>
+<Value name="9">
+<Value>division</Value>
+</Value>
+<Value name="10">
+<Value>status</Value>
+</Value>
+<Value name="11">
+<Value>coefficient</Value>
+</Value>
+<Value name="12">
+<Value>lastmodifiedDate</Value>
+</Value>
+<Value name="13">
+<Value>eventId</Value>
+</Value>
+<Value name="14">
+<Value>groupId</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

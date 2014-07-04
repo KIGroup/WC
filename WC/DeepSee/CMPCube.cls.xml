@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.DeepSee.CMPCube">
+<Description>
+</Description>
+<ProcedureBlock>1</ProcedureBlock>
+<Super>%DeepSee.CubeDefinition</Super>
+<TimeCreated>63371,58036.963529</TimeCreated>
+<DependsOn>WC.Data.AllCmp</DependsOn>
+
+<Parameter name="DOMAIN"/>
+
+<XData name="Cube">
+<Description>
+Cube definition from Architect.</Description>
+<XMLNamespace>http://www.intersystems.com/deepsee</XMLNamespace>
+<Data><![CDATA[
+<cube xmlns="http://www.intersystems.com/deepsee" name="CMPCube" displayName="CMPCube" disabled="false" abstract="false" sourceClass="WC.Data.AllCmp" countMeasureName="%COUNT" bucketSize="8" bitmapChunkInMemory="false" precompute="0">
+  <dimension name="age" disabled="false" hasAll="false" allCaption="All age" allDisplayName="age" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="age" name="age" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="coefficient" disabled="false" hasAll="false" allCaption="All coefficient" allDisplayName="coefficient" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="coefficient" name="coefficient" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="country" disabled="false" hasAll="false" allCaption="All country" allDisplayName="country" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="country" name="country" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="discipline" disabled="false" hasAll="false" allCaption="All discipline" allDisplayName="discipline" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="discipline" name="discipline" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="division" disabled="false" hasAll="false" allCaption="All division" allDisplayName="division" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="division" name="division" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="eventId" disabled="false" hasAll="false" allCaption="All eventId" allDisplayName="eventId" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="eventId" name="eventId" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="groupId" disabled="false" hasAll="false" allCaption="All groupId" allDisplayName="groupId" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="groupId" name="groupId" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="location" disabled="false" hasAll="false" allCaption="All location" allDisplayName="location" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="location" name="location" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="status" disabled="false" hasAll="false" allCaption="All status" allDisplayName="status" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="status" name="status" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+  <dimension name="type" disabled="false" hasAll="false" allCaption="All type" allDisplayName="type" type="data" hidden="false" showHierarchies="default">
+    <hierarchy name="H1" disabled="false">
+      <level sourceProperty="type" name="type" disabled="false" list="false" useDisplayValue="true" useAsFilter="true">
+      </level>
+    </hierarchy>
+  </dimension>
+</cube>
+]]></Data>
+</XData>
+</Class>
+</Export>

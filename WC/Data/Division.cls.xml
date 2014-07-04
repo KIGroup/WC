@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Division">
+<Super>%Persistent</Super>
+<TimeCreated>63372,1860.251338</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+</Property>
+
+<Index name="NameIdx">
+<Properties>Name</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="GetByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>Country</ReturnType>
+<Implementation><![CDATA[
+	quit:(..NameIdxExists(name) = $$$YES) ..NameIdxOpen(name)
+	
+	quit ..NameIdxOpen("Any")
+]]></Implementation>
+</Method>
+
+<Method name="Import">
+<Description>
+do ##class(WC.Data.Division).Import()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do ..%KillExtent()
+	set list = $LISTFROMSTRING("Any,General,Professional", ",")
+	for i=1:1:$LL(list){
+		set d = ..%New()
+		set d.Name = $LIST(list, i)
+		set st = d.%Save()
+		if $$$ISERR(st){
+			do $system.OBJ.DisplayError(st)
+		}
+	}
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.DivisionD</DataLocation>
+<DefaultData>DivisionDefaultData</DefaultData>
+<IdLocation>^WC.Data.DivisionD</IdLocation>
+<IndexLocation>^WC.Data.DivisionI</IndexLocation>
+<StreamLocation>^WC.Data.DivisionS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="DivisionDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

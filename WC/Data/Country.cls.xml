@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Country">
+<Super>%Persistent</Super>
+<TimeCreated>63372,4799.380314</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Index name="NameIdx">
+<Properties>Name</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="GetByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>Country</ReturnType>
+<Implementation><![CDATA[
+	quit:(..NameIdxExists(name) = $$$YES) ..NameIdxOpen(name)
+	
+	quit ..NameIdxOpen("Unknown")
+]]></Implementation>
+</Method>
+
+<Method name="Import">
+<Description>
+w ##class(WC.Data.Country).Import()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		TSTART
+		
+		set countries = ##class(WC.Wdsf.API).GetCountries()
+		
+		set unknown = ##class(%ZEN.proxyObject).%New()
+		set unknown.name = "Unknown"
+		do countries.Insert(unknown)
+				
+		for i=1:1:countries.Count(){
+			set countryProxy = countries.GetAt(i)
+			
+			if (..NameIdxExists(countryProxy.name) = $$$YES){
+				set countryObj = ..NameIdxOpen(countryProxy.name)
+			}
+			else{
+				set countryObj = ..%New()
+				set countryObj.Name = countryProxy.name
+			}
+
+			$$$THROWONERROR(st, countryObj.%Save())	 
+		}
+		
+		TCOMMIT
+	}
+	catch(ex){
+		TROLLBACK
+		
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.CountryD</DataLocation>
+<DefaultData>CountryDefaultData</DefaultData>
+<IdLocation>^WC.Data.CountryD</IdLocation>
+<IndexLocation>^WC.Data.CountryI</IndexLocation>
+<StreamLocation>^WC.Data.CountryS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="CountryDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

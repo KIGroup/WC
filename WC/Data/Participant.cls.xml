@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Participant">
+<Super>%Persistent</Super>
+<TimeCreated>63372,4871.930434</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.ParticipantD</DataLocation>
+<DefaultData>ParticipantDefaultData</DefaultData>
+<IdLocation>^WC.Data.ParticipantD</IdLocation>
+<IndexLocation>^WC.Data.ParticipantI</IndexLocation>
+<StreamLocation>^WC.Data.ParticipantS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="ParticipantDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

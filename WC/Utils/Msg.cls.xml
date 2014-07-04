@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Utils.Msg">
+<Abstract>1</Abstract>
+<TimeCreated>63370,70408.433844</TimeCreated>
+
+<Method name="GetErrorStatus">
+<Description>
+Get error status by key</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>errorKey:%String,additionalMsg:%String=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit $system.Status.Error(5001, ..GetMsg(errorKey)_" "_additionalMsg)
+]]></Implementation>
+</Method>
+
+<Method name="GetMsg">
+<Description>
+Get localized error message</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>key</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit $GET(^CacheMsg("Dance", $$$SessionLanguage, key), "No msg for key = "_key)
+]]></Implementation>
+</Method>
+
+<Method name="Init">
+<Description>
+do ##class(Dance.Utils.Msg).Init()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set ^CacheMsg("WC", "ru", "Test") = "ru msg"
+	set ^CacheMsg("WC", "en", "Test") = "en msg"
+	set ^CacheMsg("WC", "de", "Test") = "de msg"
+	
+	q $$$OK
+]]></Implementation>
+</Method>
+</Class>
+</Export>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Web.BrokerAdmin">
+<Super>%CSP.REST</Super>
+<TimeCreated>63370,70531.681464</TimeCreated>
+
+<Parameter name="UseSession">
+<Type>Integer</Type>
+<Default>1</Default>
+</Parameter>
+
+<XData name="UrlMap">
+<Data><![CDATA[
+<Routes>
+<!--<Route Method="GET" Url="/test2" Call="WC.Web.JsonAdmin"/>-->
+</Routes>
+]]></Data>
+</XData>
+</Class>
+</Export>

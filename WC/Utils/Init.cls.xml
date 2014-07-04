@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Utils.Init">
+<Super>%Persistent</Super>
+<TimeCreated>63372,55568.098431</TimeCreated>
+
+<Method name="Initialize">
+<Description>
+do ##class(WC.Utils.Init).Initialize()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do ..KillThemAll()
+	
+	w !,"WC.Data.Country"
+	do ##class(WC.Data.Country).Import()
+	w !,"WC.Data.CompetitionStatus"
+	do ##class(WC.Data.CompetitionStatus).Import()
+	w !,"WC.Data.CompetitionType"
+	do ##class(WC.Data.CompetitionType).Import()
+	w !,"WC.Data.Discipline"
+	do ##class(WC.Data.Discipline).Import()
+	w !,"WC.Data.Division"
+	do ##class(WC.Data.Division).Import()
+	w !,"WC.Data.AgeGroup"
+	do ##class(WC.Data.AgeGroup).Import()
+]]></Implementation>
+</Method>
+
+<Method name="KillThemAll">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do ##class(WC.Data.Competition).%KillExtent()
+	do ##class(WC.Data.Tournament).%KillExtent()
+	do ##class(WC.Data.CompetitionStatus).%KillExtent()
+	do ##class(WC.Data.CompetitionType).%KillExtent()
+	do ##class(WC.Data.Country).%KillExtent()
+	do ##class(WC.Data.AgeGroup).%KillExtent()
+	do ##class(WC.Data.Discipline).%KillExtent()
+	do ##class(WC.Data.Division).%KillExtent()
+	do ##class(WC.Data.Discipline).%KillExtent()
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Utils.InitD</DataLocation>
+<DefaultData>InitDefaultData</DefaultData>
+<IdLocation>^WC.Utils.InitD</IdLocation>
+<IndexLocation>^WC.Utils.InitI</IndexLocation>
+<StreamLocation>^WC.Utils.InitS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="InitDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

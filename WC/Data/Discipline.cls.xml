@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Discipline">
+<Super>%Persistent</Super>
+<TimeCreated>63372,44469.905155</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Index name="NameIdx">
+<Properties>Name</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="GetByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>Discipline</ReturnType>
+<Implementation><![CDATA[
+	quit:(..NameIdxExists(name) = $$$YES) ..NameIdxOpen(name)
+	
+	quit ..NameIdxOpen("UNKNOWN")
+]]></Implementation>
+</Method>
+
+<Method name="Import">
+<Description>
+do ##class(WC.Data.Discipline).Import()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set dists = ##class(%ListOfDataTypes).%New()
+	
+	do dists.Insert("STANDARD")
+	do dists.Insert("LATIN")
+	do dists.Insert("TEN DANCE")
+	do dists.Insert("FORMATION STANDARD")
+	do dists.Insert("FORMATION LATIN")
+	do dists.Insert("SHOW DANCE")
+	do dists.Insert("SHOW DANCE STANDARD")
+	do dists.Insert("SALSA")
+	do dists.Insert("CHEERLEADING")
+	do dists.Insert("TAIKE TEAM")
+	do dists.Insert("ROCK N ROLL")
+	do dists.Insert("LINEDANCE MALE SINGLE")
+	do dists.Insert("LINEDANCE FEMALE SINGLE")
+	do dists.Insert("BOOGIE WOOGIE")
+	do dists.Insert("WHEELCHAIR")
+	do dists.Insert("HIPHOP SINGLE MALE")
+	do dists.Insert("HIPHOP SINGLE WOMAN")
+	do dists.Insert("HIPHOP DUO")
+	do dists.Insert("HIPHOP SMALL TEAM")
+	do dists.Insert("UNKNOWN")
+	
+	for i=1:1:dists.Count(){
+		set obj = ..%New()
+		set obj.Name = dists.GetAt(i)
+		set st = obj.%Save()
+		if $$$ISERR(st){
+			w !,$system.OBJ.DisplayError(st)
+		} 
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.DisciplineD</DataLocation>
+<DefaultData>DisciplineDefaultData</DefaultData>
+<IdLocation>^WC.Data.DisciplineD</IdLocation>
+<IndexLocation>^WC.Data.DisciplineI</IndexLocation>
+<StreamLocation>^WC.Data.DisciplineS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="DisciplineDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

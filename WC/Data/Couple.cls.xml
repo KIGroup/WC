@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Couple">
+<Super>%Persistent</Super>
+<TimeCreated>63372,4880.697363</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.CoupleD</DataLocation>
+<DefaultData>CoupleDefaultData</DefaultData>
+<IdLocation>^WC.Data.CoupleD</IdLocation>
+<IndexLocation>^WC.Data.CoupleI</IndexLocation>
+<StreamLocation>^WC.Data.CoupleS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="CoupleDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

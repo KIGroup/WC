@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Competition">
+<Super>%Persistent</Super>
+<TimeCreated>63370,84012.82157</TimeCreated>
+
+<Property name="WDSFId">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="WDSFEventId">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="WDSFGroupId">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Tournament">
+<Type>Tournament</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Location">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="Country">
+<Type>Country</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Type">
+<Type>CompetitionType</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="StartDate">
+<Type>%Date</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Age">
+<Type>AgeGroup</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Discipline">
+<Type>Discipline</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Division">
+<Type>Division</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="CStatus">
+<Type>CompetitionStatus</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Coefficient">
+<Type>%Float</Type>
+</Property>
+
+<Property name="WDSFLastModified">
+<Type>%TimeStamp</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="LastSyncWDSF">
+<Type>%TimeStamp</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="WDSFIdIdx">
+<IdKey>1</IdKey>
+<Properties>WDSFId</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Index name="TournamentIdx">
+<Properties>Tournament</Properties>
+</Index>
+
+<Method name="Sync">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[data:%RegisteredObject,&st:%Status]]></FormalSpec>
+<ReturnType>Competition</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	#dim cmp As Competition = ""
+	
+	try{
+		TSTART
+	
+		if (..%ExistsId(data.id) = $$$YES){
+			set cmp = ..%OpenId(data.id)
+		}
+		else{
+			set cmp = ..%New()
+			set cmp.WDSFId = data.id
+		}
+		
+		set cmp.WDSFEventId = data.eventId
+		set cmp.WDSFGroupId = data.groupId
+		
+		if (##class(Tournament).%ExistsId(data.groupId) = $$$YES){
+			set trn = ##class(Tournament).%OpenId(data.groupId)
+		}
+		else{
+			set trn = ##class(Tournament).%New()
+			set trn.WDSFId = data.groupId
+			$$$THROWONERROR(st, trn.%Save())
+		}
+		
+		set cmp.Tournament = trn
+		set cmp.Country = ##class(Country).GetByName(data.country)
+		set cmp.Discipline = ##class(Discipline).GetByName(data.discipline)
+		set cmp.Division = ##class(Discipline).GetByName(data.division)
+		set cmp.CStatus = ##class(CompetitionStatus).GetByName(data.status)
+		set cmp.Type = ##class(CompetitionType).GetByName(data.type)
+		set cmp.Age = ##class(AgeGroup).NameIdxOpen(data.age)
+		set cmp.Location = data.location
+		set cmp.Coefficient = data.coefficient
+		
+		set cmp.StartDate = $ZDH($P(data.date, "T", 1), 3)
+		set cmp.WDSFLastModified = $REPLACE(data.lastmodifiedDate, "T", " ")
+		set cmp.LastSyncWDSF = $ZDT($ZTS, 3)
+		
+		$$$THROWONERROR(st, cmp.%Save())
+		
+		TCOMMIT
+	}
+	catch(ex){
+		TROLLBACK
+		set st = ex.AsStatus()
+	}
+	
+	quit cmp
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+/*
+<id>44853</id>
+<location>Juzhnyj</location>
+<country>Ukraine</country>
+<type>OPEN</type>
+<date>2013-05-01T00:00:00</date>
+<age>YOUTH</age>
+<discipline>STANDARD</discipline>
+<division>General</division>
+<status>Closed</status>
+<coefficient>1.00</coefficient>
+<lastmodifiedDate>2013-05-01T22:57:20</lastmodifiedDate>
+<eventId>19271</eventId>
+<groupId>6004</groupId>
+*/
+]]></Content>
+</UDLText>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.CompetitionD</DataLocation>
+<DefaultData>CompetitionDefaultData</DefaultData>
+<IdLocation>^WC.Data.CompetitionD</IdLocation>
+<IndexLocation>^WC.Data.CompetitionI</IndexLocation>
+<StreamLocation>^WC.Data.CompetitionS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="CompetitionDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>WDSFEventId</Value>
+</Value>
+<Value name="3">
+<Value>WDSFGroupId</Value>
+</Value>
+<Value name="4">
+<Value>Tournament</Value>
+</Value>
+<Value name="5">
+<Value>Location</Value>
+</Value>
+<Value name="6">
+<Value>Country</Value>
+</Value>
+<Value name="7">
+<Value>Type</Value>
+</Value>
+<Value name="8">
+<Value>StartDate</Value>
+</Value>
+<Value name="9">
+<Value>Age</Value>
+</Value>
+<Value name="10">
+<Value>Discipline</Value>
+</Value>
+<Value name="11">
+<Value>Division</Value>
+</Value>
+<Value name="12">
+<Value>CStatus</Value>
+</Value>
+<Value name="13">
+<Value>Coefficient</Value>
+</Value>
+<Value name="14">
+<Value>WDSFLastModified</Value>
+</Value>
+<Value name="15">
+<Value>LastSyncWDSF</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

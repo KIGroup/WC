@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Web.JsonUser">
+<Super>WC.Web.JsonBase</Super>
+<TimeCreated>63370,70859.038786</TimeCreated>
+</Class>
+</Export>

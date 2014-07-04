@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Recorder">
+<Super>%Persistent</Super>
+<TimeCreated>63372,4962.204417</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.RecorderD</DataLocation>
+<DefaultData>RecorderDefaultData</DefaultData>
+<IdLocation>^WC.Data.RecorderD</IdLocation>
+<IndexLocation>^WC.Data.RecorderI</IndexLocation>
+<StreamLocation>^WC.Data.RecorderS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="RecorderDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

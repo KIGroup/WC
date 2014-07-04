@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Tournament">
+<Super>%Persistent</Super>
+<TimeCreated>63371,84465.8791</TimeCreated>
+
+<Property name="WDSFId">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="StartDate">
+<Type>%Date</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {StartDate} = ##class({%%CLASSNAME}).GetStartDate({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+</Property>
+
+<Property name="EndDate">
+<Type>%Date</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {EndDate} = ##class({%%CLASSNAME}).GetEndDate({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+</Property>
+
+<Property name="DisciplinesStr">
+<Type>%String</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {DisciplinesStr} = ##class({%%CLASSNAME}).GetDisciplines({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="TypesStr">
+<Type>%String</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {TypesStr} = ##class({%%CLASSNAME}).GetTypes({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="CountryStr">
+<Type>%String</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {CountryStr} = ##class({%%CLASSNAME}).GetCountry({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="AgesStr">
+<Type>%String</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {AgesStr} = ##class({%%CLASSNAME}).GetAges({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Property name="CompetitionsCount">
+<Type>%String</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {CompetitionsCount} = ##class({%%CLASSNAME}).GetCompetitionsCount({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+<Parameter name="MAXLEN" value="1000"/>
+</Property>
+
+<Index name="WDSFIdIdx">
+<IdKey>1</IdKey>
+<Properties>WDSFId</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="GetDisciplines">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set disciplines = ""
+	
+	&sql(DECLARE CurDisc CURSOR FOR 
+		 	SELECT DISTINCT Discipline->Name
+		 	FROM WC_Data.Competition
+		 	WHERE Tournament = :id
+		 	ORDER BY Discipline->Name)	
+		
+	&sql(OPEN CurDisc)
+	for  
+	{	
+		&sql(FETCH CurDisc INTO :discName) 
+		quit:(SQLCODE '= 0)
+		
+		set disciplines = disciplines_", "_discName	
+	}
+	
+	&sql(CLOSE CurDisc)
+	
+	quit $E(disciplines, 3, *)
+]]></Implementation>
+</Method>
+
+<Method name="GetTypes">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set types = ""
+	
+	&sql(DECLARE CurType CURSOR FOR 
+		 	SELECT DISTINCT Type->Name
+		 	FROM WC_Data.Competition
+		 	WHERE Tournament = :id
+		 	ORDER BY Type->Name)	
+		
+	&sql(OPEN CurType)
+	for  
+	{	
+		&sql(FETCH CurType INTO :typeName) 
+		quit:(SQLCODE '= 0)
+		
+		set types = types_", "_typeName	
+	}
+	
+	&sql(CLOSE CurType)
+	
+	quit $E(types, 3, *)
+]]></Implementation>
+</Method>
+
+<Method name="GetCountry">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set country = "Unknown"
+	
+	&sql(SELECT Country->Name INTO :country FROM WC_Data.Competition WHERE Tournament = :id)	
+	
+	quit country
+]]></Implementation>
+</Method>
+
+<Method name="GetAges">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set ages = ""
+	
+	&sql(DECLARE CurAge CURSOR FOR 
+		 	SELECT DISTINCT Age->Name
+		 	FROM WC_Data.Competition
+		 	WHERE Tournament = :id
+		 	ORDER BY Age->FromAge)	
+		
+	&sql(OPEN CurAge)
+	for  
+	{	
+		&sql(FETCH CurAge INTO :ageName) 
+		quit:(SQLCODE '= 0)
+		
+		set ages = ages_", "_ageName	
+	}
+	
+	&sql(CLOSE CurAge)
+	
+	quit $E(ages, 3, *)
+]]></Implementation>
+</Method>
+
+<Method name="GetStartDate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Date</ReturnType>
+<Implementation><![CDATA[
+	set date = ""
+	
+	&sql(SELECT MIN(StartDate) INTO :date FROM WC_Data.Competition WHERE Tournament = :id)	
+	
+	quit date
+]]></Implementation>
+</Method>
+
+<Method name="GetEndDate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Date</ReturnType>
+<Implementation><![CDATA[
+	set date = ""
+	
+	&sql(SELECT MAX(StartDate) INTO :date FROM WC_Data.Competition WHERE Tournament = :id)	
+	
+	quit date
+]]></Implementation>
+</Method>
+
+<Method name="GetCompetitionsCount">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Date</ReturnType>
+<Implementation><![CDATA[
+	set count = 0
+	
+	&sql(SELECT COUNT(ID) INTO :count FROM WC_Data.Competition WHERE Tournament = :id)	
+	
+	quit count
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.TournamentD</DataLocation>
+<DefaultData>TournamentDefaultData</DefaultData>
+<IdLocation>^WC.Data.TournamentD</IdLocation>
+<IndexLocation>^WC.Data.TournamentI</IndexLocation>
+<StreamLocation>^WC.Data.TournamentS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="TournamentDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

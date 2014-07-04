@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.CompetitionStatus">
+<Super>%Persistent</Super>
+<TimeCreated>63372,45235.003352</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Index name="NameIdx">
+<Properties>Name</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="GetByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>CompetitionStatus</ReturnType>
+<Implementation><![CDATA[
+	quit:(..NameIdxExists(name) = $$$YES) ..NameIdxOpen(name)
+	
+	quit ..NameIdxOpen("Unknown")
+]]></Implementation>
+</Method>
+
+<Method name="Import">
+<Description>
+do ##class(WC.Data.CompetitionStatus).Import()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do ..%KillExtent()
+	set statuses = ##class(%ListOfDataTypes).%New()
+	
+	do statuses.Insert("PreRegsitration")
+	do statuses.Insert("Registering")
+	do statuses.Insert("RegistrationClosed")
+	do statuses.Insert("InProgress")
+	do statuses.Insert("Processing")
+	do statuses.Insert("Closed")
+	do statuses.Insert("Cancelled")
+	do statuses.Insert("Unknown")
+	
+	for i=1:1:statuses.Count(){
+		set obj = ..%New()
+		set obj.Name = statuses.GetAt(i)
+		set st = obj.%Save()
+		if $$$ISERR(st){
+			w !,$system.OBJ.DisplayError(st)
+		} 
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.CompetitionStatusD</DataLocation>
+<DefaultData>CompetitionStatusDefaultData</DefaultData>
+<IdLocation>^WC.Data.CompetitionStatusD</IdLocation>
+<IndexLocation>^WC.Data.CompetitionStatusI</IndexLocation>
+<StreamLocation>^WC.Data.CompetitionStatusS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="CompetitionStatusDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

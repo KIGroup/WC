@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.RecorderPrivilege">
+<Super>%Persistent</Super>
+<TimeCreated>63372,41509.451808</TimeCreated>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.RecorderPrivilegeD</DataLocation>
+<DefaultData>RecorderPrivilegeDefaultData</DefaultData>
+<IdLocation>^WC.Data.RecorderPrivilegeD</IdLocation>
+<IndexLocation>^WC.Data.RecorderPrivilegeI</IndexLocation>
+<StreamLocation>^WC.Data.RecorderPrivilegeS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="RecorderPrivilegeDefaultData">
+<Structure>listnode</Structure>
+<Subscript/>
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

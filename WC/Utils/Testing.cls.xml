@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Utils.Testing">
+<Abstract>1</Abstract>
+<TimeCreated>63372,50374.343623</TimeCreated>
+
+<Method name="TestCompetitonsImportFromWDSF">
+<Description>
+do ##class(WC.Utils.Testing).TestCompetitonsImportFromWDSF()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>kill:%Boolean=1</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	if kill{
+		do ##class(WC.Data.Competition).%KillExtent()
+		do ##class(WC.Data.Tournament).%KillExtent()
+	}
+	
+	set listId = $LISTFROMSTRING("46441,46459,46459,46540,46460,46732,46733,46734,46735,46736,46737,46738,46739,46740,46741", ",")
+	
+	for i=1:1:$LL(listId){
+		set cmpWDSF = ##class(WC.Wdsf.API).GetCompetitionById($LIST(listId, i))
+		do ##class(WC.Data.Competition).Sync(cmpWDSF, .st)
+		
+		if $$$ISERR(st){
+			w !, "i="_i
+			w !,$system.OBJ.DisplayError(st)
+		}
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="TestCompetitonsImportFromAllCmp">
+<Description>
+do ##class(WC.Utils.Testing).TestCompetitonsImportFromAllCmp()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>kill:%Boolean=1</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	if kill{
+		do ##class(WC.Data.Competition).%KillExtent()
+		do ##class(WC.Data.Tournament).%KillExtent()
+	}
+	
+	&sql(DECLARE CurCmp CURSOR FOR 
+		 	SELECT ID
+		 	FROM WC_Data.AllCmp)	
+		
+	&sql(OPEN CurCmp)
+	for  
+	{	
+		&sql(FETCH CurCmp INTO :id) 
+		quit:(SQLCODE '= 0)
+		
+		set cmp = ##class(WC.Data.AllCmp).idIdxOpen(id)
+		do ##class(WC.Data.Competition).Sync(cmp, .st)
+		
+		if $$$ISERR(st){
+			w !, "id="_id
+			w !,$system.OBJ.DisplayError(st)
+			return st
+		}
+	}
+	
+	&sql(CLOSE CurCmp)
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+</Class>
+</Export>

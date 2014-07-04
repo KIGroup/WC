@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.CompetitionType">
+<Super>%Persistent</Super>
+<TimeCreated>63372,43042.611002</TimeCreated>
+
+<Property name="Name">
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Index name="NameIdx">
+<Properties>Name</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="GetByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>CompetitionType</ReturnType>
+<Implementation><![CDATA[
+	quit:(..NameIdxExists(name) = $$$YES) ..NameIdxOpen(name)
+	
+	quit ..NameIdxOpen("UNKNOWN")
+]]></Implementation>
+</Method>
+
+<Method name="Import">
+<Description>
+do ##class(WC.Data.CompetitionType).Import()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set types = ##class(%ListOfDataTypes).%New()
+	
+	do types.Insert("ASIA CHAMPIONSHIP")
+	do types.Insert("ASIA PACIFIC CHAMPIONSHIP")
+	do types.Insert("CONTINENTAL CHAMPIONSHIP")
+	do types.Insert("EU CHAMPIONSHIP")
+	do types.Insert("EUROPE CENTRAL CHAMPIONSHIP")
+	do types.Insert("EUROPE CHAMPIONSHIP")
+	do types.Insert("EUROPE CUP")
+	do types.Insert("EUROPE EAST CHAMPIONSHIP")
+	do types.Insert("EUROPE MASTER")
+	do types.Insert("EUROPE NORTH CHAMPIONSHIP")
+	do types.Insert("EUROPE UNI")
+	do types.Insert("EUROPE WEST")
+	do types.Insert("GENERIC OPEN")
+	do types.Insert("GRAND SLAM")
+	do types.Insert("INTERNATIONAL OPEN")
+	do types.Insert("IWGA WG")
+	do types.Insert("NATIONAL CHAMPIONSHIP")
+	do types.Insert("NORTH AMERICA CHAMPIONSHIP")
+	do types.Insert("OPEN")
+	do types.Insert("PD")
+	do types.Insert("PD EUROPEAN CHAMPIONSHIP")
+	do types.Insert("PD EUROPEAN CUP")
+	do types.Insert("PD SUPER GRAND PRIX")
+	do types.Insert("PD TNS")
+	do types.Insert("PD WORLD CHAMPIONSHIP")
+	do types.Insert("PD WORLD CUP")
+	do types.Insert("SOUTH AMERICAN CHAMPIONSHIP")
+	do types.Insert("SOUTH EUROPEAN CHAMPIONSHIP")
+	do types.Insert("SUB CHAMPIONSHIP")
+	do types.Insert("UNKNOWN")
+	do types.Insert("WDSG")
+	do types.Insert("WORLD CHAMPIONSHIP")
+	do types.Insert("WORLD CUP")
+	do types.Insert("WORLD OPEN")
+	
+	for i=1:1:types.Count(){
+		set obj = ..%New()
+		set obj.Name = types.GetAt(i)
+		set st = obj.%Save()
+		if $$$ISERR(st){
+			w !,$system.OBJ.DisplayError(st)
+		} 
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.CompetitionTypeD</DataLocation>
+<DefaultData>CompetitionTypeDefaultData</DefaultData>
+<IdLocation>^WC.Data.CompetitionTypeD</IdLocation>
+<IndexLocation>^WC.Data.CompetitionTypeI</IndexLocation>
+<StreamLocation>^WC.Data.CompetitionTypeS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="CompetitionTypeDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>
