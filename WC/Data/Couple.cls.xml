@@ -4,6 +4,183 @@
 <Super>%Persistent</Super>
 <TimeCreated>63372,4880.697363</TimeCreated>
 
+<Property name="WDSFId">
+<Type>%String</Type>
+</Property>
+
+<Property name="Man">
+<Type>Person</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Woman">
+<Type>Person</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="CStatus">
+<Type>CoupleStatus</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="AgeGroup">
+<Type>AgeGroup</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Division">
+<Type>Division</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="LastSyncWDSF">
+<Type>%TimeStamp</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="WDSFIdIdx">
+<IdKey>1</IdKey>
+<Properties>WDSFId</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Index name="AthleteIdx">
+<Properties>Man,Woman</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[data:%RegisteredObject,&st:%Status]]></FormalSpec>
+<ReturnType>Couple</ReturnType>
+<Implementation><![CDATA[
+	#dim couple As Couple = ""
+	
+	if (..%ExistsId(data.id) = $$$YES){
+		set couple = ..%OpenId(data.id)	
+	}
+	else{
+		set couple = ..%New()
+		set couple.WDSFId = data.WDSFId
+	}
+	
+	set couple.Man = ##class(Person).%OpenId(data.man.id)
+	set couple.Woman = ##class(Person).%OpenId(data.woman.id)
+	set couple.CStatus = ##class(CoupleStatus).%OpenId(data.status.id)
+	set couple.Division = ##class(Division).%OpenId(data.division.id)
+	set couple.AgeGroup = ##class(AgeGroup).%OpenId(data.ageGroup.id)
+	set couple.LastSyncWDSF = data.lastSyncWDSF
+	
+	set st = couple.%Save()
+	quit couple
+]]></Implementation>
+</Method>
+
+<Method name="SyncWDSF">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[wdsfId:%String,syncTimeOutMinutes:%Integer=60,&st]]></FormalSpec>
+<ReturnType>Person</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	set currTS = $ZDT($ZTS, 3)
+	set timeDiff = ""
+	
+	&sql(SELECT {fn TIMESTAMPDIFF(SQL_TSI_MINUTE, LastSyncWDSF, :currTS)} As TimeDiff INTO :timeDiff
+		 FROM WC_Data.Couple
+		 WHERE WDSFId = :wdsfId)
+	
+	// If data of our couple not so old, then open and return
+	if (timeDiff <= syncTimeOutMinutes) && (..%ExistsId(wdsfId) = $$$YES){
+		quit ..%OpenId(wdsfId,, .st)
+	}
+	
+	set wdsfData = ##class(WC.Wdsf.API).GetCouple(wdsfId, .st)
+	quit:$$$ISERR(st) st
+	
+	// Synchronize couple athletes 
+	set persons = ##class(%ListOfObjects).%New()
+	for i=1:1:wdsfData.link.Count(){
+		set link = wdsfData.link.GetAt(i).href
+		
+		if ($FIND(link, "/person/") '= 0){
+			set min = $P(link, "/person/", 2)
+			do persons.Insert(##class(Person).SyncWDSF(min, 60, .st))			
+		}
+	}
+	
+	set manProxy = ##class(%ZEN.proxyObject).%New()
+	set womanProxy = ##class(%ZEN.proxyObject).%New()
+	if (persons.GetAt(1).Sex = "Male"){
+		set manProxy.id = persons.GetAt(1).%Id()
+		set womanProxy.id = persons.GetAt(2).%Id()
+	}
+	else{
+		set womanProxy.id = persons.GetAt(1).%Id()
+		set manProxy.id = persons.GetAt(2).%Id()
+	}
+		
+	set coupleData = ##class(%ZEN.proxyObject).%New()
+	set coupleData.id = wdsfId
+	set coupleData.WDSFId = wdsfData.id
+	set coupleData.man = manProxy
+	set coupleData.woman = womanProxy
+	set coupleData.status = ##class(CoupleStatus).GetByName(wdsfData.status).ConvertToProxyObject()
+	set coupleData.division = ##class(Division).GetByName(wdsfData.division).ConvertToProxyObject()
+	set ageGroup = ##class(AgeGroup).GetByName(wdsfData.age)
+	if '$ISOBJECT(ageGroup){
+		set ageGroup = ##class(Person).%OpenId(coupleData.man.id).AgeGroup
+	}
+	
+	set coupleData.ageGroup = ageGroup.ConvertToProxyObject()
+	set coupleData.lastSyncWDSF = $ZDT($ZTS, 3)
+	
+	quit ..Save(coupleData, .st)
+]]></Implementation>
+</Method>
+
+<Method name="GetByNumbers">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[manId:%String,womanId:%String,&st]]></FormalSpec>
+<ReturnType>Couple</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	set couple = ..AthleteIdxOpen(manId, womanId,,.st)
+	
+	if $$$ISERR(st){
+		set couple = ..AthleteIdxOpen(womanId, manId,,.st)
+	}
+	
+	quit couple
+]]></Implementation>
+</Method>
+
+<Method name="GetIdFromWDSF">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[manId:%String,womanId:%String,&st]]></FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	set couples = ##class(WC.Wdsf.API).GetCouples(manId,,,,.st)
+	quit:$$$ISERR(st) ""
+	
+	for i=1:1:couples.Count(){
+		set couple = couples.GetAt(i)
+		
+		for k=1:1:couple.link.Count(){
+			set link = couple.link.GetAt(k)
+			if ($FIND(link.rel, "/couple/woman") '= 0) && ($P(link.href, "/person/", 2) = womanId){
+				return couple.id
+			}
+		}
+	}
+	
+	set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Couple_NotFoundByNumbers")
+	quit ""
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^WC.Data.CoupleD</DataLocation>
@@ -13,10 +190,29 @@
 <StreamLocation>^WC.Data.CoupleS</StreamLocation>
 <ExtentSize>100000</ExtentSize>
 <Data name="CoupleDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>WDSFId</Value>
+</Value>
+<Value name="3">
+<Value>Man</Value>
+</Value>
+<Value name="4">
+<Value>Woman</Value>
+</Value>
+<Value name="5">
+<Value>CStatus</Value>
+</Value>
+<Value name="6">
+<Value>AgeGroup</Value>
+</Value>
+<Value name="7">
+<Value>Division</Value>
+</Value>
+<Value name="8">
+<Value>LastSyncWDSF</Value>
 </Value>
 </Data>
 </Storage>

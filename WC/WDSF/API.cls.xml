@@ -33,12 +33,19 @@ do ##class(WC.Wdsf.API).Call("GET", "/competition/46164?format=json", .resp)</De
   		$$$TOE(sc, req.Send($zconvert(pMethod,"u"), pUrl))
  		set json = req.HttpResponse.Data.Read()
   		set ^json("wc") = json
-  		$$$TOE(sc,##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(json,,.pResponse))
+  		$$$TOE(sc, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(json,,.pResponse))
  	}
- 	catch ex
- 	{
+ 	catch ex{
   		set sc = ex.AsStatus()
-  		do $system.OBJ.DisplayError(sc)
+ 	}
+ 	
+ 	if $$$ISOK(sc) && ($CLASSNAME(pResponse) = "%ZEN.proxyObject"){
+	 	set sc = $CASE(pResponse.Code, 
+	 					401 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_401"),
+	 					403 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_403"),
+	 					404 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_404"),
+	 					409 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_409"),
+	 						: $$$OK)
  	}
  	
  	quit pResponse
@@ -107,7 +114,7 @@ Get person by id (MIN)</Description>
 <Implementation><![CDATA[
 	set url = "/person/"_id_"?format=json"
 	
-	quit ..Call("GET", url, sc)
+	quit ..Call("GET", url, .sc)
 ]]></Implementation>
 </Method>
 
@@ -129,7 +136,7 @@ division [string] : General/Professional</Description>
 	if (ageGroup '= "") set url = url_"&ageGroup="_ageGroup
 	if (division '= "") set url = url_"&division="_division
 	
-	quit ..Call("GET", url, sc)
+	quit ..Call("GET", url, .sc)
 ]]></Implementation>
 </Method>
 
@@ -142,7 +149,7 @@ Get couple by id, example id = rls-1802</Description>
 <Implementation><![CDATA[
 	set url = "/couple/"_id_"?format=json"
 	
-	quit ..Call("GET", url, sc)
+	quit ..Call("GET", url, .sc)
 ]]></Implementation>
 </Method>
 

@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.ParticipantCouple">
+<Super>WC.Data.Participant</Super>
+<TimeCreated>63405,55769.417073</TimeCreated>
+
+<Property name="Couple">
+<Type>Couple</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="CmpCplIdx">
+<Properties>Competition,Couple</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Create">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[recorder:Recorder,competition:Competition,data:%RegisteredObject,*response:%RegisteredObject,&st:%Status]]></FormalSpec>
+<ReturnType>ParticipantCouple</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+
+	#dim participant As ParticipantCouple = $$$NULLOREF
+	#dim couple As Couple = $$$NULLOREF
+	set wdsfCoupleId = $$$NULLOREF
+	
+	set coupleOld = ##class(Couple).GetByNumbers(data.manNumber, data.womanNumber, .st)
+	
+	// Get Id of existed couple from DB or find couple Id in WDSF DB by athlete's numbers
+	if $$$ISOK(st){
+		set wdsfCoupleId = coupleOld.%Id()
+	}
+	else{
+		set wdsfCoupleId = ##class(Couple).GetIdFromWDSF(data.manNumber, data.womanNumber, .st)
+		if $$$ISERR(st)	{
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.IsSolo = $$$NO
+			set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+			set response = ##class(WC.Utils.Msg).GetResponseObject("error_Couple_NotFoundInWDSF", otherInfo)
+			quit participant
+		}
+	}
+	
+	kill coupleOld
+	
+	// Synchronize couple from WDSF DB (or not) 
+	set couple = ##class(Couple).SyncWDSF(wdsfCoupleId, 1, .st)
+	if $$$ISERR(st)	{
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.coupleId = wdsfCoupleId
+		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Couple_SyncFailed", otherInfo)
+		quit participant
+	}
+	
+	// Check allowed age group for competition
+	if (competition.AgeGroup.AllowedToDanceIn.FindOref(couple.AgeGroup) = ""){
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.coupleId = wdsfCoupleId
+		set otherInfo.coupleAgeGroup = couple.AgeGroup.Name
+		set otherInfo.competitionAgeGroup = competition.AgeGroup.Name 
+		set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Couple_AgeGroup_NotAllowedForCompetition")
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Couple_AgeGroup_NotAllowedForCompetition", otherInfo)
+		quit participant	
+	}
+	
+	// Check couple status
+	if (couple.CStatus.Name '= "Active"){
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.coupleId = wdsfCoupleId
+		set otherInfo.coupleStatus = couple.CStatus.Name 
+		set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Couple_StatusNotActive")
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Couple_StatusNotActive", otherInfo)
+		quit participant	
+	}
+	
+	set participant = ..%New()
+	set participant.Recorder = recorder
+	set participant.Competition = competition
+	set participant.Couple = couple
+	set st = participant.%Save()
+	
+	if $$$ISERR(st) {
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.coupleId = wdsfCoupleId
+		set otherInfo.IsSolo = $$$NO
+		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_ParticipantCouple_NotCreated", otherInfo)
+		quit participant
+	}
+	
+	quit participant
+]]></Implementation>
+</Method>
+
+<Method name="Delete">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>recorder:Recorder,competition:Competition,data:%RegisteredObject,*response:%RegisteredObject</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+
+	set couple = ##class(Couple).GetByNumbers(data.manNumber, data.womanNumber, .st)
+	if $$$ISERR(st) {
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.IsSolo = $$$NO
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Couple_NotFoundByNumbers", otherInfo)
+		quit st
+	}
+	
+	set st = ..CmpCplIdxDelete(competition.%Id(), couple.%Id(), 4)
+	
+	if $$$ISERR(st) {
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.IsSolo = $$$NO
+		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_ParticipantCouple_NotRemoved", otherInfo)
+		quit st
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="IsExists">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competitionId:%String,manNumber:%String,womanNumber:%String</FormalSpec>
+<ReturnType>%Boolean</ReturnType>
+<Implementation><![CDATA[
+	set count = 0
+	&sql(SELECT COUNT(ID) INTO :count
+		 FROM WC_Data.ParticipantCouple 
+		 WHERE Competition = :competitionId AND 
+		 	 ((Couple->Man = :manNumber AND Couple->Woman = :womanNumber) OR 
+		 	  (Couple->Woman = :manNumber AND Couple->Man = :womanNumber)))
+	
+	quit:(count>0) $$$YES
+	quit $$$NO
+]]></Implementation>
+</Method>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>ParticipantCoupleDefaultData</DefaultData>
+<Data name="ParticipantCoupleDefaultData">
+<Subscript>"ParticipantCouple"</Subscript>
+<Value name="1">
+<Value>Couple</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

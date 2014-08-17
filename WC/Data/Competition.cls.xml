@@ -42,9 +42,10 @@
 <Property name="StartDate">
 <Type>%Date</Type>
 <Required>1</Required>
+<Parameter name="FORMAT" value="3"/>
 </Property>
 
-<Property name="Age">
+<Property name="AgeGroup">
 <Type>AgeGroup</Type>
 <Required>1</Required>
 </Property>
@@ -78,6 +79,13 @@
 <Required>1</Required>
 </Property>
 
+<Property name="IsSolo">
+<Type>%Boolean</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {IsSolo} = ##class({%%CLASSNAME}).GetIsSolo({Discipline})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+</Property>
+
 <Index name="WDSFIdIdx">
 <IdKey>1</IdKey>
 <Properties>WDSFId</Properties>
@@ -88,61 +96,114 @@
 <Properties>Tournament</Properties>
 </Index>
 
-<Method name="Sync">
+<Method name="Save">
 <ClassMethod>1</ClassMethod>
 <FormalSpec><![CDATA[data:%RegisteredObject,&st:%Status]]></FormalSpec>
 <ReturnType>Competition</ReturnType>
 <Implementation><![CDATA[
 	set st = $$$OK
+	
 	#dim cmp As Competition = ""
-	
-	try{
-		TSTART
-	
-		if (..%ExistsId(data.id) = $$$YES){
-			set cmp = ..%OpenId(data.id)
-		}
-		else{
-			set cmp = ..%New()
-			set cmp.WDSFId = data.id
-		}
 		
-		set cmp.WDSFEventId = data.eventId
-		set cmp.WDSFGroupId = data.groupId
-		
-		if (##class(Tournament).%ExistsId(data.groupId) = $$$YES){
-			set trn = ##class(Tournament).%OpenId(data.groupId)
-		}
-		else{
-			set trn = ##class(Tournament).%New()
-			set trn.WDSFId = data.groupId
-			$$$THROWONERROR(st, trn.%Save())
-		}
-		
-		set cmp.Tournament = trn
-		set cmp.Country = ##class(Country).GetByName(data.country)
-		set cmp.Discipline = ##class(Discipline).GetByName(data.discipline)
-		set cmp.Division = ##class(Discipline).GetByName(data.division)
-		set cmp.CStatus = ##class(CompetitionStatus).GetByName(data.status)
-		set cmp.Type = ##class(CompetitionType).GetByName(data.type)
-		set cmp.Age = ##class(AgeGroup).NameIdxOpen(data.age)
-		set cmp.Location = data.location
-		set cmp.Coefficient = data.coefficient
-		
-		set cmp.StartDate = $ZDH($P(data.date, "T", 1), 3)
-		set cmp.WDSFLastModified = $REPLACE(data.lastmodifiedDate, "T", " ")
-		set cmp.LastSyncWDSF = $ZDT($ZTS, 3)
-		
-		$$$THROWONERROR(st, cmp.%Save())
-		
-		TCOMMIT
+	if (..%ExistsId(data.id) = $$$YES){
+		set cmp = ..%OpenId(data.id,,.st)
+		$$$THROWONERROR(st, st)	
 	}
-	catch(ex){
-		TROLLBACK
-		set st = ex.AsStatus()
+	else{
+		set cmp = ..%New()
+		set cmp.WDSFId = data.WDSFId
 	}
+	
+	set cmp.WDSFEventId = data.WDSFEventId
+	set cmp.WDSFGroupId = data.WDSFGroupId
+	
+	#dim trn As Tournament = ""
+		
+	// Open | create tournament
+	if (##class(Tournament).%ExistsId(data.WDSFGroupId) = $$$YES){
+		set trn = ##class(Tournament).%OpenId(data.WDSFGroupId,,.st)		
+	}
+	else{
+		set trnData = ##class(%ZEN.proxyObject).%New()
+		set trnData.WDSFId = data.WDSFGroupId
+		set trn = ##class(Tournament).Save(trnData, .st)
+		$$$THROWONERROR(st, st)
+	}
+		
+	set cmp.Tournament = trn
+	set cmp.Country = ##class(Country).%OpenId(data.country.id)
+	set cmp.Discipline = ##class(Discipline).%OpenId(data.discipline.id)
+	set cmp.Division = ##class(Division).%OpenId(data.division.id)
+	set cmp.CStatus = ##class(CompetitionStatus).%OpenId(data.status.id)
+	set cmp.Type = ##class(CompetitionType).%OpenId(data.type.id)
+	set cmp.AgeGroup = ##class(AgeGroup).%OpenId(data.ageGroup.id)
+	set cmp.Location = data.location
+	set cmp.Coefficient = data.coefficient
+		
+	set cmp.StartDate = $ZDH(data.startDate, 3)
+	set cmp.WDSFLastModified = data.lastModifiedDate
+	set cmp.LastSyncWDSF = $ZDT($ZTS, 3)
+	
+	set st = cmp.%Save()
 	
 	quit cmp
+]]></Implementation>
+</Method>
+
+<Method name="SyncWDSF">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[wdsfId:%String,syncTimeOutMinutes:%Integer=60,&st]]></FormalSpec>
+<ReturnType>Competition</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	set currTS = $ZDT($ZTS, 3)
+	set timeDiff = ""
+	
+	&sql(SELECT {fn TIMESTAMPDIFF(SQL_TSI_MINUTE, LastSyncWDSF, :currTS)} As TimeDiff INTO :timeDiff
+		 FROM WC_Data.Competition
+		 WHERE WDSFId = :wdsfId)
+	
+	if (timeDiff <= syncTimeOutMinutes) && (..%ExistsId(wdsfId) = $$$YES){
+		quit ..%OpenId(wdsfId,,.st)
+	}
+	
+	set wdsfData = ##class(WC.Wdsf.API).GetCompetitionById(wdsfId)
+	$$$THROWONERROR(st, st)
+	
+	set cmpData = ##class(%ZEN.proxyObject).%New()
+	set cmpData.id = wdsfId
+	set cmpData.WDSFId = wdsfData.id
+	set cmpData.WDSFGroupId = wdsfData.groupId
+	set cmpData.WDSFEventId = wdsfData.eventId
+	set cmpData.country = ##class(Country).GetByName(wdsfData.country).ConvertToProxyObject()
+	set cmpData.discipline = ##class(Discipline).GetByName(wdsfData.discipline).ConvertToProxyObject()
+	set cmpData.division =  ##class(Division).GetByName(wdsfData.division).ConvertToProxyObject()
+	set cmpData.status = ##class(CompetitionStatus).GetByName(wdsfData.status).ConvertToProxyObject()
+	set cmpData.type = ##class(CompetitionType).GetByName(wdsfData.type).ConvertToProxyObject()
+	set cmpData.ageGroup = ##class(AgeGroup).GetByName(wdsfData.age).ConvertToProxyObject()
+	set cmpData.location = wdsfData.location
+	set cmpData.coefficient = wdsfData.coefficient
+	set cmpData.startDate = $P(wdsfData.date, "T", 1)
+	set cmpData.lastModifiedDate = $REPLACE(wdsfData.lastmodifiedDate, "T", " ")
+	set cmpData.LastSyncWDSF = $ZDT($ZTS, 3)
+	
+	quit ..Save(cmpData, .st)
+]]></Implementation>
+</Method>
+
+<Method name="GetIsSolo">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>disciplineId:%String</FormalSpec>
+<ReturnType>%Boolean</ReturnType>
+<Implementation><![CDATA[
+	set name = ""
+	&sql(SELECT Name INTO :name FROM WC_Data.Discipline WHERE ID = :disciplineId)	
+	if ($FIND($ZCVT(name, "U"), "SINGLE") > 0) || ($FIND($ZCVT(name, "U"), "SOLO") > 0) {
+		quit $$$YES
+	}
+	
+	quit $$$NO
 ]]></Implementation>
 </Method>
 
@@ -175,8 +236,6 @@
 <StreamLocation>^WC.Data.CompetitionS</StreamLocation>
 <ExtentSize>100000</ExtentSize>
 <Data name="CompetitionDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
 </Value>
@@ -221,6 +280,9 @@
 </Value>
 <Value name="15">
 <Value>LastSyncWDSF</Value>
+</Value>
+<Value name="16">
+<Value>AgeGroup</Value>
 </Value>
 </Data>
 </Storage>

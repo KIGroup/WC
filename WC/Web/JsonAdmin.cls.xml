@@ -3,5 +3,226 @@
 <Class name="WC.Web.JsonAdmin">
 <Super>WC.Web.JsonBase</Super>
 <TimeCreated>63370,70836.6459</TimeCreated>
+
+<Method name="Registration">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>data:%ZEN.proxyObject=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	try{
+		if '$ISOBJECT(data){
+			$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
+		}
+	
+		set response = ##class(%ZEN.proxyObject).%New()
+	
+		// Check for registration (couple|solo)
+		if (##class(WC.Data.Participant).IsExists(data.competitionId, data.manNumber, data.womanNumber) = $$$YES){
+			return ##class(WC.Utils.Msg).GetResponseObject("success_Registration_Exists").%ToJSON()
+		}
+		
+		// Recorder. Verify existence.
+		set recorder = ##class(WC.Data.Recorder).GetCurrentRecorder(.st)
+		if $$$ISERR(st)	{
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.recorder = $UserName
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Recorder_NotFound", otherInfo).%ToJSON()
+		}
+		
+		// Competition. Verify existence.
+		set competition = ##class(WC.Data.Competition).%OpenId(data.competitionId,,.st)
+		if $$$ISERR(st) {
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.competitionId = data.competitionId
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_NotFound", otherInfo).%ToJSON()
+		}
+		
+		// Competition. Verify status
+		if (competition.CStatus.Name '= "Registering") {
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.competitionStatus = competition.CStatus.Name
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_UnusableStatus", otherInfo).%ToJSON()
+		}
+		
+		// Check recorder privileges
+		if $$$ISERR(##class(WC.Data.Recorder).CheckPrivileges(recorder.%Id(), competition.Tournament.%Id())) {
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.recorder = recorder.Login
+			set otherInfo.tournamentId = competition.Tournament.%Id()
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Recorder_NoPrivileges", otherInfo).%ToJSON()
+		}
+		
+		// Find conflict competition(tournament) by day
+		set cmpConflictMan = ##class(WC.Data.Person).GetConflictCompetition(data.manNumber, data.competitionId, .cfSt1)
+		set cmpConflictWoman = ##class(WC.Data.Person).GetConflictCompetition(data.womanNumber, data.competitionId, .cfSt2)
+							 						   		
+		if $ISOBJECT(cmpConflictMan) || $ISOBJECT(cmpConflictWoman){
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.conflict = ##class(%ZEN.proxyObject).%New()
+			if $ISOBJECT(cmpConflictMan){
+				set otherInfo.conflict.competitionId = cmpConflictMan.%Id()
+				set otherInfo.conflict.day = $ZD(cmpConflictMan.StartDate, 3)
+				set otherInfo.manNumber = data.manNumber
+			}
+			elseif $ISOBJECT(cmpConflictWoman){
+				set otherInfo.conflict.competitionId = cmpConflictWoman.%Id()
+				set otherInfo.conflict.day = $ZD(cmpConflictWoman.StartDate, 3)
+				set otherInfo.womanNumber = data.womanNumber
+			}
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Conflict_SameDayRegistration", otherInfo).%ToJSON()
+		}
+		
+		// Check competition type (Solo|Couple)
+		set participantClassName = ""
+		if (competition.IsSolo){
+			set participantClassName = "WC.Data.ParticipantSingle"
+			
+			// Only one number needed, not two
+			if (data.manNumber '= "") && (data.womanNumber '= ""){
+				set otherInfo = ##class(%ZEN.proxyObject).%New()
+				set otherInfo.isSolo = $$$YES
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Solo_OnlyOneNumberIsRequired", otherInfo).%ToJSON()
+			}
+			
+			// Only one number needed
+			if (data.manNumber = "") && (data.womanNumber = ""){
+				set otherInfo = ##class(%ZEN.proxyObject).%New()
+				set otherInfo.isSolo = $$$YES
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_EmptyNumber", otherInfo).%ToJSON()
+			}
+			
+			set data.number = $SELECT(data.manNumber="" : data.womanNumber, data.womanNumber="": data.manNumber, 1:"") 
+		} 
+		else{
+			set participantClassName = "WC.Data.ParticipantCouple"
+			
+			// Two numbers is needed
+			if (data.manNumber = "") || (data.womanNumber = ""){
+				set otherInfo = ##class(%ZEN.proxyObject).%New()
+				set otherInfo.isSolo = $$$NO
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_EmptyNumber", otherInfo).%ToJSON()
+			}	
+		}
+		
+		TSTART
+		
+		do $CLASSMETHOD(participantClassName, "Create", recorder, competition, data, .response, .st)
+		
+		if $$$ISERR(st) {
+			TROLLBACK
+			return response.%ToJSON()
+		}
+		
+		TCOMMIT
+		do ##class(WC.Utils.Msg).GetResponseObject("success_Registration_Completed").%ToJSON()	
+	}
+	catch(ex){
+		if ($TLEVEL '= 0){
+			TROLLBACK
+		}
+		
+		set st = ex.AsStatus()
+	}	
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="Deregistration">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>data:%ZEN.proxyObject=""</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	try{
+		if '$ISOBJECT(data){
+			$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
+		}
+	
+		set response = ##class(%ZEN.proxyObject).%New()
+	
+		// Check for registration (couple|solo)
+		if (##class(WC.Data.Participant).IsExists(data.competitionId, data.manNumber, data.womanNumber) = $$$NO){
+			return ##class(WC.Utils.Msg).GetResponseObject("success_Registration_NotExists").%ToJSON()
+		}
+		
+		// Recorder. Verify existence.
+		set recorder = ##class(WC.Data.Recorder).GetCurrentRecorder(.st)
+		if $$$ISERR(st)	{
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.recorder = $UserName
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Recorder_NotFound", otherInfo).%ToJSON()
+		}
+		
+		// Competition. Verify existence.
+		set competition = ##class(WC.Data.Competition).%OpenId(data.competitionId,,.st)
+		if $$$ISERR(st) {
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.competitionId = data.competitionId
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_NotFound", otherInfo).%ToJSON()
+		}
+		
+		// Competition. Verify status
+		if (competition.CStatus.Name '= "Registering") {
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.competitionStatus = competition.CStatus.Name
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_UnusableStatus", otherInfo).%ToJSON()
+		}
+		
+		// Check recorder privileges
+		if $$$ISERR(##class(WC.Data.Recorder).CheckPrivileges(recorder.%Id(), competition.Tournament.%Id())) {
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.recorder = recorder.Login
+			set otherInfo.tournamentId = competition.Tournament.%Id()
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Recorder_NoPrivileges", otherInfo).%ToJSON()
+		}
+		
+		// Check competition type (Solo|Couple)
+		set participantClassName = ""
+		if (competition.IsSolo){
+			set participantClassName = "WC.Data.ParticipantSingle"
+			
+			// Only one number needed, not two
+			if (data.manNumber '= "") && (data.womanNumber '= ""){
+				set otherInfo = ##class(%ZEN.proxyObject).%New()
+				set otherInfo.isSolo = $$$YES
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Solo_OnlyOneNumberIsRequired", otherInfo).%ToJSON()
+			}
+		
+			set data.number = $SELECT(data.manNumber="" : data.womanNumber, data.womanNumber="": data.manNumber, 1:"") 
+		} 
+		else{
+			set participantClassName = "WC.Data.ParticipantCouple"
+			
+			// Two numbers is needed
+			if (data.manNumber = "") || (data.womanNumber = ""){
+				set otherInfo = ##class(%ZEN.proxyObject).%New()
+				set otherInfo.isSolo = $$$NO
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_EmptyNumber", otherInfo).%ToJSON()
+			}	
+		}
+		
+		TSTART
+		
+		set st = $CLASSMETHOD(participantClassName, "Delete", recorder, competition, data, .response)
+		
+		if $$$ISERR(st) {
+			TROLLBACK
+			return response.%ToJSON()
+		}
+		
+		TCOMMIT
+		do ##class(WC.Utils.Msg).GetResponseObject("success_Registration_Removed").%ToJSON()	
+	}
+	catch(ex){
+		if ($TLEVEL '= 0){
+			TROLLBACK
+		}
+		
+		set st = ex.AsStatus()
+	}	
+	
+	quit st
+]]></Implementation>
+</Method>
 </Class>
 </Export>

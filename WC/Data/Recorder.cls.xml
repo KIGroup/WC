@@ -4,6 +4,100 @@
 <Super>%Persistent</Super>
 <TimeCreated>63372,4962.204417</TimeCreated>
 
+<Property name="Login">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Name">
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Property name="OtherInfo">
+<Type>%Text</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Property name="AvailableTournaments">
+<Type>Tournament</Type>
+<Collection>array</Collection>
+</Property>
+
+<Index name="LoginIdx">
+<Properties>Login</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[data:%RegisteredObject,&st]]></FormalSpec>
+<ReturnType>Recorder</ReturnType>
+<Implementation><![CDATA[
+	#dim rec As Recorder = ""
+	
+	if (data.id){
+		set rec = ..%OpenId(data.id)	
+	}
+	else{
+		set rec = ..%New()
+	}
+	
+	set rec.Login = data.login
+	set rec.Name = data.name
+	set rec.OtherInfo = data.otherInfo
+	set st = rec.%Save()
+	
+	quit rec
+]]></Implementation>
+</Method>
+
+<Method name="GetCurrentRecorder">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[&st]]></FormalSpec>
+<ReturnType>Recorder</ReturnType>
+<Implementation><![CDATA[	quit ..LoginIdxOpen($USERNAME,,.st)
+]]></Implementation>
+</Method>
+
+<Method name="CheckPrivileges">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>recorderId:%String,tournamentId:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set count = 0
+	
+	&sql(SELECT COUNT(ID) INTO :count FROM WC_Data.Recorder_AvailableTournaments WHERE Recorder = :recorderId AND AvailableTournaments = :tournamentId)
+	
+	if (count > 0){
+		quit $$$OK
+	}
+	
+	quit ##class(WC.Utils.Msg).GetErrorStatus("error_RecorderNoPrivileges")
+]]></Implementation>
+</Method>
+
+<Method name="AddAvailableTournament">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>recorder:Recorder,tournament:Tournament</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do recorder.AvailableTournaments.SetAt(tournament, tournament.%Id())
+	quit recorder.%Save()
+]]></Implementation>
+</Method>
+
+<Method name="RemoveAvailableTournament">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>recorder:Recorder,tournament:Tournament</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do recorder.AvailableTournaments.SetAt(tournament.%Id())
+	quit recorder.%Save()
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^WC.Data.RecorderD</DataLocation>
@@ -12,11 +106,23 @@
 <IndexLocation>^WC.Data.RecorderI</IndexLocation>
 <StreamLocation>^WC.Data.RecorderS</StreamLocation>
 <ExtentSize>100000</ExtentSize>
+<Data name="AvailableTournaments">
+<Attribute>AvailableTournaments</Attribute>
+<Structure>subnode</Structure>
+<Subscript>"AvailableTournaments"</Subscript>
+</Data>
 <Data name="RecorderDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Login</Value>
+</Value>
+<Value name="3">
+<Value>Name</Value>
+</Value>
+<Value name="4">
+<Value>OtherInfo</Value>
 </Value>
 </Data>
 </Storage>

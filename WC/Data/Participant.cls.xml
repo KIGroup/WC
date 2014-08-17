@@ -4,6 +4,40 @@
 <Super>%Persistent</Super>
 <TimeCreated>63372,4871.930434</TimeCreated>
 
+<Property name="Recorder">
+<Type>Recorder</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Competition">
+<Type>Competition</Type>
+<Required>1</Required>
+</Property>
+
+<Method name="IsExists">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competitionId:%String,manNumber:%String,womanNumber:%String</FormalSpec>
+<ReturnType>%Boolean</ReturnType>
+<Implementation><![CDATA[
+	quit:'##class(Competition).%ExistsId(competitionId) $$$NO
+	
+	set isSolo = $$$NO
+	&sql(SELECT IsSolo INTO :isSolo FROM WC_Data.Competition WHERE ID = :competitionId)
+	
+	if (isSolo){
+		set number = manNumber
+		if (number = "") set number = womanNumber
+		
+		quit ##class(ParticipantSingle).IsExists(competitionId, number)
+	}
+	else{
+		quit ##class(ParticipantCouple).IsExists(competitionId, manNumber, womanNumber)
+	}
+	
+	quit $$$NO
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^WC.Data.ParticipantD</DataLocation>
@@ -13,10 +47,14 @@
 <StreamLocation>^WC.Data.ParticipantS</StreamLocation>
 <ExtentSize>100000</ExtentSize>
 <Data name="ParticipantDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Recorder</Value>
+</Value>
+<Value name="3">
+<Value>Competition</Value>
 </Value>
 </Data>
 </Storage>

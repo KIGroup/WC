@@ -47,10 +47,10 @@
 <Parameter name="MAXLEN" value="1000"/>
 </Property>
 
-<Property name="AgesStr">
+<Property name="AgeGroupsStr">
 <Type>%String</Type>
 <Calculated>1</Calculated>
-<SqlComputeCode>set {AgesStr} = ##class({%%CLASSNAME}).GetAges({%%ID})</SqlComputeCode>
+<SqlComputeCode>set {AgeGroupsStr} = ##class({%%CLASSNAME}).GetAgeGroups({%%ID})</SqlComputeCode>
 <SqlComputed>1</SqlComputed>
 <Parameter name="MAXLEN" value="1000"/>
 </Property>
@@ -68,6 +68,26 @@
 <Properties>WDSFId</Properties>
 <Unique>1</Unique>
 </Index>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[data:%RegisteredObject,&st]]></FormalSpec>
+<ReturnType>Tournament</ReturnType>
+<Implementation><![CDATA[
+	#dim trn As Tournament = ""
+		
+	if (data.id){
+		set trn = ..%OpenId(data.id,,.st)	
+	}
+	else{
+		set trn = ..%New()
+		set trn.WDSFId = data.WDSFId
+	}
+	
+	set st = trn.%Save()
+	quit trn
+]]></Implementation>
+</Method>
 
 <Method name="GetDisciplines">
 <ClassMethod>1</ClassMethod>
@@ -138,7 +158,7 @@
 ]]></Implementation>
 </Method>
 
-<Method name="GetAges">
+<Method name="GetAgeGroups">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>id:%String</FormalSpec>
 <ReturnType>%String</ReturnType>
@@ -146,10 +166,10 @@
 	set ages = ""
 	
 	&sql(DECLARE CurAge CURSOR FOR 
-		 	SELECT DISTINCT Age->Name
+		 	SELECT DISTINCT AgeGroup->Name
 		 	FROM WC_Data.Competition
 		 	WHERE Tournament = :id
-		 	ORDER BY Age->FromAge)	
+		 	ORDER BY AgeGroup->FromAge)	
 		
 	&sql(OPEN CurAge)
 	for  
@@ -214,8 +234,6 @@
 <StreamLocation>^WC.Data.TournamentS</StreamLocation>
 <ExtentSize>100000</ExtentSize>
 <Data name="TournamentDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
 </Value>

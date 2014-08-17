@@ -4,6 +4,58 @@
 <Super>%Persistent</Super>
 <TimeCreated>63372,4949.960157</TimeCreated>
 
+<Property name="Name">
+<Type>%String</Type>
+</Property>
+
+<Index name="NameIdx">
+<Properties>Name</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="ConvertToProxyObject">
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.id = ..%Id()
+	set proxy.name = ..Name
+	
+	quit proxy
+]]></Implementation>
+</Method>
+
+<Method name="GetByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>Country</ReturnType>
+<Implementation><![CDATA[
+	quit:(..NameIdxExists(name) = $$$YES) ..NameIdxOpen(name)
+	
+	quit ..NameIdxOpen("Unknown")
+]]></Implementation>
+</Method>
+
+<Method name="Import">
+<Description>
+do ##class(WC.Data.CoupleStatus).Import()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do ..%KillExtent()
+	set list = $LISTFROMSTRING("Unknown,Active,Inactive,Retired", ",")
+	for i=1:1:$LL(list){
+		set d = ..%New()
+		set d.Name = $LIST(list, i)
+		set st = d.%Save()
+		if $$$ISERR(st){
+			do $system.OBJ.DisplayError(st)
+		}
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^WC.Data.CoupleStatusD</DataLocation>
@@ -13,8 +65,6 @@
 <StreamLocation>^WC.Data.CoupleStatusS</StreamLocation>
 <ExtentSize>100000</ExtentSize>
 <Data name="CoupleStatusDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
 </Value>

@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.ParticipantSingle">
+<Super>WC.Data.Participant</Super>
+<TimeCreated>63405,55656.736112</TimeCreated>
+
+<Property name="Athlete">
+<Type>Person</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="CmpAthIdx">
+<Properties>Competition,Athlete</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Create">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[recorder:Recorder,competition:Competition,data:%RegisteredObject,*response:%RegisteredObject,&st:%Status]]></FormalSpec>
+<ReturnType>ParticipantSingle</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+
+	set participant = $$$NULLOREF
+	set athlete = ##class(WC.Data.Person).SyncWDSF(data.number, 1, .st)
+	if $$$ISERR(st)	{
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.number = data.number
+		set otherInfo.competitionId = competition.%Id()
+		set otherInfo.IsSolo = $$$YES
+		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Person_SyncFailed", otherInfo)
+		quit participant
+	}
+	
+	// Check allowed age group for competition
+	if (competition.AgeGroup.AllowedToDanceIn.FindOref(athlete.AgeGroup) = ""){
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.isSolo = $$$YES
+		set otherInfo.athleteAgeGroup = athlete.AgeGroup.Name
+		set otherInfo.competitionAgeGroup = competition.AgeGroup.Name 
+		set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Athlete_AgeGroup_NotAllowedForCompetition")
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_AgeGroup_NotAllowedForCompetition", otherInfo)
+		quit participant	
+	}
+	
+	set participant = ..%New()
+	set participant.Recorder = recorder
+	set participant.Competition = competition
+	set participant.Athlete = athlete
+	set st = participant.%Save()
+	
+	if $$$ISERR(st) {
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.number = data.number
+		set otherInfo.competitionId = competition.%Id()
+		set otherInfo.IsSolo = $$$YES
+		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_ParticipantSingle_NotCreated", otherInfo)
+		quit participant
+	}
+	
+	quit participant
+]]></Implementation>
+</Method>
+
+<Method name="Delete">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>recorder:Recorder,competition:Competition,data:%RegisteredObject,*response:%RegisteredObject</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+
+	set st = ..CmpAthIdxDelete(competition.%Id(), data.number, 4)
+	
+	if $$$ISERR(st) {
+		set otherInfo = ##class(%ZEN.proxyObject).%New()
+		set otherInfo.IsSolo = $$$YES
+		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+		set response = ##class(WC.Utils.Msg).GetResponseObject("error_ParticipantSingle_NotRemoved", otherInfo)
+		quit st
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="IsExists">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competitionId:%String,number:%String</FormalSpec>
+<ReturnType>%Boolean</ReturnType>
+<Implementation><![CDATA[
+	set count = 0
+	
+	&sql(SELECT COUNT(ID) INTO :count
+			 FROM WC_Data.ParticipantSingle
+			 WHERE Competition = :competitionId AND Athlete = :number)
+			 
+	quit:(count>0) $$$YES
+	quit $$$NO
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+/*
+<participant xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://services.worlddancesport.org/api">
+<id>1469053</id>
+<number>294</number>
+<status>Present</status>
+<basepoints>0</basepoints>
+<rank>1</rank>
+<competitionId>45505</competitionId>
+<rounds/>
+<personId>0</personId>
+<name>Shane McKeever</name>
+<country>Ireland, Republic of</country>
+</participant>
+*/
+]]></Content>
+</UDLText>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DefaultData>ParticipantSingleDefaultData</DefaultData>
+<Data name="ParticipantSingleDefaultData">
+<Subscript>"ParticipantSingle"</Subscript>
+<Value name="1">
+<Value>Athlete</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

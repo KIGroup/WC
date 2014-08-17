@@ -49,6 +49,25 @@
 <Unique>1</Unique>
 </Index>
 
+<Method name="ConvertToProxyObject">
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.id = ..%Id()
+	set proxy.name = ..Name
+	
+	quit proxy
+]]></Implementation>
+</Method>
+
+<Method name="GetByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String</FormalSpec>
+<ReturnType>Discipline</ReturnType>
+<Implementation><![CDATA[	quit ..NameIdxOpen(name)
+]]></Implementation>
+</Method>
+
 <Method name="GetMaxDob">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>fromAge:%Integer</FormalSpec>
@@ -125,10 +144,16 @@ w ##class(WC.Data.AgeGroup).Import()</Description>
 			set group = groups.GetAt(i)
 			set age = ..NameIdxOpen(group.name)
 			
-			for k=1:1:group.AllowedToDanceIn.Count(){
-				do age.AllowedToDanceIn.Insert(..NameIdxOpen(group.AllowedToDanceIn.GetAt(k)))
+			if (age.AllowedToDanceIn.FindObjectId(age.%Id()) = "") {
+				do age.AllowedToDanceIn.Insert(age)
 			}
 			
+			for k=1:1:group.AllowedToDanceIn.Count(){
+				set storedAge = ..NameIdxOpen(group.AllowedToDanceIn.GetAt(k))
+				if (age.AllowedToDanceIn.FindObjectId(storedAge.%Id()) = ""){
+					do age.AllowedToDanceIn.Insert(storedAge)
+				}
+			}
 			$$$THROWONERROR(st, age.%Save())
 		}
 		

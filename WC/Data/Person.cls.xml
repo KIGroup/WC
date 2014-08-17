@@ -4,6 +4,158 @@
 <Super>%Persistent</Super>
 <TimeCreated>63372,4889.196056</TimeCreated>
 
+<Property name="WDSFId">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Surname">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Name">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Sex">
+<Type>%String</Type>
+<Required>1</Required>
+<Parameter name="VALUELIST" value=",Male,Female"/>
+</Property>
+
+<Property name="Nationality">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="500"/>
+</Property>
+
+<Property name="Country">
+<Type>Country</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="AgeGroup">
+<Type>AgeGroup</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="LastSyncWDSF">
+<Type>%TimeStamp</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="WDSFIdIdx">
+<IdKey>1</IdKey>
+<Properties>WDSFId</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[data:%RegisteredObject,&st:%Status]]></FormalSpec>
+<ReturnType>Person</ReturnType>
+<Implementation><![CDATA[
+	#dim person As Person = ""
+	
+	if (..%ExistsId(data.id) = $$$YES){
+		set person = ..%OpenId(data.id)	
+	}
+	else{
+		set person = ..%New()
+		set person.WDSFId = data.WDSFId
+	}
+	
+	set person.Surname = data.surname
+	set person.Name = data.name
+	set person.Sex = data.sex
+	set person.Nationality = data.nationality
+	set person.Country = ##class(Country).%OpenId(data.country.id)
+	set person.AgeGroup = ##class(AgeGroup).%OpenId(data.ageGroup.id)
+	set person.LastSyncWDSF = data.lastSyncWDSF
+	
+	set st = person.%Save()
+	quit person
+]]></Implementation>
+</Method>
+
+<Method name="SyncWDSF">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[wdsfId:%String,syncTimeOutMinutes:%Integer=60,&st]]></FormalSpec>
+<ReturnType>Person</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	set currTS = $ZDT($ZTS, 3)
+	set timeDiff = ""
+
+	&sql(SELECT {fn TIMESTAMPDIFF(SQL_TSI_MINUTE, LastSyncWDSF, :currTS)} As TimeDiff INTO :timeDiff
+		 FROM WC_Data.Person
+		 WHERE WDSFId = :wdsfId)
+	
+	// If data of our person not so old, then open and return
+	if (timeDiff <= syncTimeOutMinutes) && (..%ExistsId(wdsfId) = $$$YES){
+		quit ..%OpenId(wdsfId,,.st)
+	}
+	
+	set wdsfData = ##class(WC.Wdsf.API).GetPerson(wdsfId, .st)
+	quit:$$$ISERR(st) st
+	
+	set personData = ##class(%ZEN.proxyObject).%New()
+	set personData.id = wdsfId
+	set personData.WDSFId = wdsfData.id
+	set personData.surname = wdsfData.surname
+	set personData.name = wdsfData.name
+	set personData.sex = wdsfData.sex
+	set personData.nationality = wdsfData.nationality
+	set personData.country = ##class(Country).GetByName(wdsfData.country).ConvertToProxyObject()
+	set personData.ageGroup = ##class(AgeGroup).NameIdxOpen(wdsfData.ageGroup).ConvertToProxyObject()
+	set personData.lastSyncWDSF = $ZDT($ZTS, 3)
+	
+	quit ..Save(personData, .st)
+]]></Implementation>
+</Method>
+
+<Method name="GetConflictCompetition">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[personId:%String,cmpId:%String,&st]]></FormalSpec>
+<ReturnType>Competition</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	set cmp = ##class(Competition).%OpenId(cmpId,,.st)
+	set cmpTournamentId = cmp.Tournament.%Id()
+	
+	set cmpConflictId = ""
+	&sql(SELECT ID INTO :cmpConflictId
+		 FROM WC_Data.Competition
+		 WHERE CStatus->Name <> 'Closed' 
+		 	   AND CStatus->Name <> 'Cancelled'
+		 	   AND Tournament <> :cmpTournamentId 
+		 	   AND StartDate = :cmp.StartDate
+		 	   AND ID IN (SELECT prtCouple.Competition FROM WC_Data.ParticipantCouple as prtCouple WHERE prtCouple.Couple->Man = :personId OR prtCouple.Couple->Woman = :personId
+		 	   			  UNION
+		 	   			  SELECT prtSingle.Competition FROM WC_Data.ParticipantSingle as prtSingle WHERE prtSingle.Athlete = :personId))
+		 	   			  
+	quit ##class(Competition).%OpenId(cmpConflictId,,.st)
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+/*
+<person xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://services.worlddancesport.org/api">
+<id>10026655</id>
+<name>Alexey</name>
+<surname>Polovnikov</surname>
+<sex>Male</sex>
+<nationality>Russian Federation</nationality>
+<country>Russian Federation</country>
+<ageGroup>ADULT</ageGroup>
+</person>
+*/
+]]></Content>
+</UDLText>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^WC.Data.PersonD</DataLocation>
@@ -13,10 +165,35 @@
 <StreamLocation>^WC.Data.PersonS</StreamLocation>
 <ExtentSize>100000</ExtentSize>
 <Data name="PersonDefaultData">
-<Structure>listnode</Structure>
-<Subscript/>
 <Value name="1">
 <Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>NumberWDSF</Value>
+</Value>
+<Value name="3">
+<Value>Surname</Value>
+</Value>
+<Value name="4">
+<Value>Name</Value>
+</Value>
+<Value name="5">
+<Value>Sex</Value>
+</Value>
+<Value name="6">
+<Value>Nationality</Value>
+</Value>
+<Value name="7">
+<Value>Country</Value>
+</Value>
+<Value name="8">
+<Value>AgeGroup</Value>
+</Value>
+<Value name="9">
+<Value>LastSyncWDSF</Value>
+</Value>
+<Value name="10">
+<Value>WDSFId</Value>
 </Value>
 </Data>
 </Storage>

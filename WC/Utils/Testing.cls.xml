@@ -4,6 +4,362 @@
 <Abstract>1</Abstract>
 <TimeCreated>63372,50374.343623</TimeCreated>
 
+<Method name="TestRegistration">
+<Description>
+do ##class(WC.Utils.Testing).TestRegistration()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	try{
+		w !, "=================================================="
+		w !, "=== TestRegistration"
+		
+		do ##class(WC.Data.Competition).%KillExtent()
+		do ##class(WC.Data.Tournament).%KillExtent()
+		do ##class(WC.Data.Participant).%KillExtent()
+		do ##class(WC.Data.Person).%KillExtent()
+		do ##class(WC.Data.Couple).%KillExtent()
+		
+		#dim recorder As WC.Data.Recorder = ##class(WC.Data.Recorder).GetCurrentRecorder()
+		do recorder.AvailableTournaments.Clear()
+		do recorder.%Save()
+		
+		set cmpSingle1 = "45907"
+		set cmpNoPriv1 = "45599"
+		set cmpClosed1 = "46034"
+		set cmpNorm1 = "46734"
+		set cmpNorm2 = "46735"
+		set cmpNorm3 = "46460"
+		set cmpNormSameDate1 = "45734"
+		set cmpNormSameDate2 = "45688"
+		set cmpNormSameDate3 = "45779"
+
+		set cmpList = $LB(cmpSingle1, cmpNoPriv1, cmpClosed1, cmpNorm1, cmpNorm2, cmpNorm3, cmpNormSameDate1, cmpNormSameDate2, cmpNormSameDate3)
+		
+		for i=1:1:$LL(cmpList){
+			set cmp = ##class(WC.Data.Competition).SyncWDSF($LIST(cmpList, i), 1, .st)
+			w !,"Cmp "_i_", st="_st
+			do ##class(WC.Data.Recorder).AddAvailableTournament(recorder, cmp.Tournament)
+		
+			if (cmp.%Id() '= cmpClosed1){
+				set cmp.CStatus = ##class(WC.Data.CompetitionStatus).GetByName("Registering")
+				do cmp.%Save()
+			}
+		}
+		
+		set sameDate = $ZDH("2014-10-12", 3)
+		set cmpNormSameDate1Obj = ##class(WC.Data.Competition).%OpenId(cmpNormSameDate1)
+		set cmpNormSameDate1Obj.StartDate = sameDate
+		do cmpNormSameDate1Obj.%Save()
+
+		set cmpNormSameDate2Obj = ##class(WC.Data.Competition).%OpenId(cmpNormSameDate2)
+		set cmpNormSameDate2Obj.StartDate = sameDate
+		do cmpNormSameDate2Obj.%Save()
+		
+		set cmpNormSameDate3Obj = ##class(WC.Data.Competition).%OpenId(cmpNormSameDate3)
+		set cmpNormSameDate3Obj.StartDate = sameDate
+		do cmpNormSameDate3Obj.%Save()
+		//------------------------------------------------------------------------------------------
+		
+		do recorder.AvailableTournaments.RemoveAt(##class(WC.Data.Competition).%OpenId(cmpNoPriv1).Tournament.%Id())
+		do recorder.%Save()
+			
+		set prtCplNorm1 = $LB("10056986", "10056987")
+		set prtCplNorm2 = $LB("10062148", "10073902")
+		set prtCplNorm3 = $LB("10055891", "10051730")
+		set prtCplNorm4 = $LB("10072330", "10070539")
+		set prtCplNorm5SeniorII = $LB("10090056","10090007")
+		set prtCplMixed1 = $LB("10056986", "10073902")
+		set prtCplMixed2 = $LB("10062148", "10056987")
+		set prtSingle1 = "10053855"
+		set prtSingle2 = "10053856"
+		
+		set testData = ##class(%ZEN.proxyObject).%New()
+		
+		w !,!, "=== 1. Competition not found"
+		set testData.competitionId = 100
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 2. Recorder no privileges"
+		set testData.competitionId = cmpNoPriv1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 3. Competition bad status"
+		set testData.competitionId = cmpClosed1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 4. Registration normal couple(1) into normal cmp(1)"
+		set testData.competitionId = cmpNorm1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 5. Registration normal couple(2) into normal cmp(2)"
+		set testData.competitionId = cmpNorm2
+		set testData.manNumber = $LIST(prtCplNorm2, 1)
+		set testData.womanNumber = $LIST(prtCplNorm2, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 6. Again registration normal couple(1) into normal cmp(1)"
+		set testData.competitionId = cmpNorm1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		
+		w !,!, "=== 7. Registration couple with 2 epmty numbers into normal cmp(3)"
+		set testData.competitionId = cmpNorm3
+		set testData.manNumber = ""
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		
+		w !,!, "=== 8. Registration couple with 1 epmty numbers into normal cmp(3)"
+		set testData.competitionId = cmpNorm3
+		set testData.manNumber = prtSingle1
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+
+		w !,!, "=== 9. Registration mixed couple(1) into normal cmp(3)"
+		set testData.competitionId = cmpNorm3
+		set testData.manNumber = $LIST(prtCplMixed1, 1)
+		set testData.womanNumber = $LIST(prtCplMixed1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		
+		w !,!, "=== 10. Registration normal solo(1)-man into solo cmp(1)"
+		set testData.competitionId = cmpSingle1
+		set testData.manNumber = prtSingle1
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		
+		w !,!, "=== 11. Registration solo with empty number into solo cmp(1)"
+		set testData.competitionId = cmpSingle1
+		set testData.manNumber = ""
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 12. Registration solo with wrong number into solo cmp(1)"
+		set testData.competitionId = cmpSingle1
+		set testData.manNumber = ""
+		set testData.womanNumber = "7777777"
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 13. Registration normal couple(1) into normal cmpSameDate(1)"
+		set testData.competitionId = cmpNormSameDate1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		
+		w !,!, "=== 14. Registration normal couple(1) into normal cmpSameDate(2)"
+		set testData.competitionId = cmpNormSameDate2
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+		
+		w !,!, "=== 15. Registration normal solo into normal cmpSameDate(3). WRONG Age Group"
+		set testData.competitionId = cmpNormSameDate3
+		set testData.manNumber = ""
+		set testData.womanNumber = $LIST(prtCplNorm5SeniorII, 2)
+		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
+	
+		
+		w !, "== End of test registration"
+		w !, "=================================================="
+	}
+	catch(ex){
+		w !
+		do $SYSTEM.OBJ.DisplayError(ex.AsStatus())
+	}
+	
+	q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="TestDeregistration">
+<Description>
+do ##class(WC.Utils.Testing).TestDeregistration()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	try{
+		w !, "=================================================="
+		w !, "=== TestDeregistration"
+		
+
+		set cmpSingle1 = "45907"
+		set cmpNoPriv1 = "45599"
+		set cmpClosed1 = "46034"
+		set cmpNorm1 = "46734"
+		set cmpNorm2 = "46735"
+		set cmpNorm3 = "46460"
+		set cmpNormSameDate1 = "45734"
+		set cmpNormSameDate2 = "45688"
+		set cmpNormSameDate3 = "45779"
+			
+		set prtCplNorm1 = $LB("10056986", "10056987")
+		set prtCplNorm2 = $LB("10062148", "10073902")
+		set prtCplNorm3 = $LB("10055891", "10051730")
+		set prtCplNorm4 = $LB("10072330", "10070539")
+		set prtCplNorm5SeniorII = $LB("10090056","10090007")
+		set prtCplMixed1 = $LB("10056986", "10073902")
+		set prtCplMixed2 = $LB("10062148", "10056987")
+		set prtSingle1 = "10053855"
+		set prtSingle2 = "10053856"
+		
+		set testData = ##class(%ZEN.proxyObject).%New()
+		
+		w !,!, "=== 1. Competition not found"
+		set testData.competitionId = 100
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 2. Recorder no privileges"
+		set testData.competitionId = cmpNoPriv1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 3. Competition bad status"
+		set testData.competitionId = cmpClosed1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 4. Deregistration normal couple(1) into normal cmp(1)"
+		set testData.competitionId = cmpNorm1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 5. Deregistration normal couple(2) into normal cmp(2)"
+		set testData.competitionId = cmpNorm2
+		set testData.manNumber = $LIST(prtCplNorm2, 1)
+		set testData.womanNumber = $LIST(prtCplNorm2, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 6. Again deregistration normal couple(1) into normal cmp(1)"
+		set testData.competitionId = cmpNorm1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		
+		w !,!, "=== 7. Deregistration couple with 2 epmty numbers into normal cmp(3)"
+		set testData.competitionId = cmpNorm3
+		set testData.manNumber = ""
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		
+		w !,!, "=== 8. Deregistration couple with 1 epmty numbers into normal cmp(3)"
+		set testData.competitionId = cmpNorm3
+		set testData.manNumber = prtSingle1
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+
+		w !,!, "=== 9. Deregistration mixed couple(1) into normal cmp(3)"
+		set testData.competitionId = cmpNorm3
+		set testData.manNumber = $LIST(prtCplMixed1, 1)
+		set testData.womanNumber = $LIST(prtCplMixed1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		
+		w !,!, "=== 10. Deregistration normal solo(1)-man into solo cmp(1)"
+		set testData.competitionId = cmpSingle1
+		set testData.manNumber = prtSingle1
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		
+		w !,!, "=== 11. Deregistration solo with empty number into solo cmp(1)"
+		set testData.competitionId = cmpSingle1
+		set testData.manNumber = ""
+		set testData.womanNumber = ""
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 12. Deregistration solo with wrong number into solo cmp(1)"
+		set testData.competitionId = cmpSingle1
+		set testData.manNumber = ""
+		set testData.womanNumber = "7777777"
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 13. Deregistration normal couple(1) into normal cmpSameDate(1)"
+		set testData.competitionId = cmpNormSameDate1
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		
+		w !,!, "=== 14. Deregistration normal couple(1) into normal cmpSameDate(2)"
+		set testData.competitionId = cmpNormSameDate2
+		set testData.manNumber = $LIST(prtCplNorm1, 1)
+		set testData.womanNumber = $LIST(prtCplNorm1, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+		
+		w !,!, "=== 15. Deregistration normal solo into normal cmpSameDate(3). WRONG Age Group"
+		set testData.competitionId = cmpNormSameDate3
+		set testData.manNumber = ""
+		set testData.womanNumber = $LIST(prtCplNorm5SeniorII, 2)
+		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
+	
+		
+		w !, "== End of test registration"
+		w !, "=================================================="
+	}
+	catch(ex){
+		w !
+		do $SYSTEM.OBJ.DisplayError(ex.AsStatus())
+	}
+	
+	q $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="TestCoupleImportFromWDSF">
+<Description>
+do ##class(WC.Utils.Testing).TestCoupleImportFromWDSF()</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>kill:%Boolean=1</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{		
+		if kill{
+			do ##class(WC.Data.Person).%KillExtent()
+			do ##class(WC.Data.Couple).%KillExtent()
+		}
+		
+		set listId = $LISTFROMSTRING("rls-1802", ",")
+		
+		for i=1:1:$LL(listId){
+			do ##class(WC.Data.Couple).SyncWDSF($LIST(listId, i), 1, .st)
+			w !,"i="_i
+			$$$THROWONERROR(st, st)
+		}
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+		w !,$system.OBJ.DisplayError(st)
+	}
+
+	
+	quit st
+]]></Implementation>
+</Method>
+
 <Method name="TestCompetitonsImportFromWDSF">
 <Description>
 do ##class(WC.Utils.Testing).TestCompetitonsImportFromWDSF()</Description>
@@ -11,24 +367,43 @@ do ##class(WC.Utils.Testing).TestCompetitonsImportFromWDSF()</Description>
 <FormalSpec>kill:%Boolean=1</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	if kill{
-		do ##class(WC.Data.Competition).%KillExtent()
-		do ##class(WC.Data.Tournament).%KillExtent()
-	}
+	set st = $$$OK
 	
-	set listId = $LISTFROMSTRING("46441,46459,46459,46540,46460,46732,46733,46734,46735,46736,46737,46738,46739,46740,46741", ",")
+	try{		
+		#dim recorder As WC.Data.Recorder = ##class(WC.Data.Recorder).GetCurrentRecorder()
 	
-	for i=1:1:$LL(listId){
-		set cmpWDSF = ##class(WC.Wdsf.API).GetCompetitionById($LIST(listId, i))
-		do ##class(WC.Data.Competition).Sync(cmpWDSF, .st)
-		
-		if $$$ISERR(st){
-			w !, "i="_i
-			w !,$system.OBJ.DisplayError(st)
+		if kill{
+			do ##class(WC.Data.Competition).%KillExtent()
+			do ##class(WC.Data.Tournament).%KillExtent()
+			do recorder.AvailableTournaments.Clear()
+			w !,"Recorder save="_recorder.%Save()
 		}
+		
+		set listId = $LISTFROMSTRING("46441,46459,46540,46460,46732,46733,46734,46735,46736,46737,46738,46739,46740,46741,46034,46035,46036,46037,46038,46039,46040,45598,45599,45505,45907,45508,45779", ",")
+
+		for i=1:1:$LL(listId){
+			set cmp = ##class(WC.Data.Competition).SyncWDSF($LIST(listId, i), 60, .st)
+			if (i '= 1){
+				set cmp.CStatus = ##class(WC.Data.CompetitionStatus).GetByName("Registering")
+				do cmp.%Save()
+			}
+			
+			w !,"recorderAdded="_##class(WC.Data.Recorder).AddAvailableTournament(recorder, cmp.Tournament)
+			
+			w !,"i="_i
+			$$$THROWONERROR(st, st)
+		}
+		
+		do recorder.AvailableTournaments.RemoveAt("6117")
+		do recorder.%Save()
 	}
+	catch(ex){
+		set st = ex.AsStatus()
+		w !,$system.OBJ.DisplayError(st)
+	}
+
 	
-	quit $$$OK
+	quit st
 ]]></Implementation>
 </Method>
 
@@ -67,6 +442,41 @@ do ##class(WC.Utils.Testing).TestCompetitonsImportFromAllCmp()</Description>
 	&sql(CLOSE CurCmp)
 	
 	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="TestRecorder">
+<Description>
+do ##class(WC.Utils.Testing).TestRecorder()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		TSTART
+		
+		set data = ##class(%ZEN.proxyObject).%New()
+		set data.login = "ilson"
+		set data.name = "Super admin"
+		set data.otherInfo = "Just ilya"
+		#dim rec As WC.Data.Recorder = ##class(WC.Data.Recorder).Save(data, .st)
+		$$$THROWONERROR(st, st)
+		
+		set trnId = ""
+		&sql(SELECT ID INTO :trnId FROM WC_Data.Tournament)
+		do rec.AvailableTournaments.SetAt(##class(WC.Data.Tournament).%OpenId(trnId), trnId)
+		do rec.%Save()
+		
+		TCOMMIT
+	}
+	catch(ex){
+		TROLLBACK
+		set st = ex.AsStatus()
+		w !,$system.OBJ.DisplayError(st)
+	}
+	
+	quit st
 ]]></Implementation>
 </Method>
 </Class>
