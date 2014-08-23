@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Web.Login">
+<Super>%CSP.Page</Super>
+<TimeCreated>63420,58349.746079</TimeCreated>
+
+<Method name="OnPage">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	&html<<html>
+	<head>        
+		<link rel="stylesheet" type="text/css" href="css/bootstrap.min.css">
+        <title>WDSF Controller</title>
+         <style type="text/css">
+            body {
+              padding-top: 50px;
+              padding-bottom: 50px;
+            }
+			
+			#caption{
+				margin: 20px 0 20px 0;
+				font-size: 24px;
+				color: #777;
+			}
+			
+            .form-signin {
+              max-width: 300px;
+              padding: 0px 19px 19px 19px;
+              margin: 0 auto 20px;
+              background-color: #fff;
+              border: 1px solid #e5e5e5;
+              -webkit-border-radius: 5px;
+                 -moz-border-radius: 5px;
+                      border-radius: 5px;
+              -webkit-box-shadow: 0 1px 8px rgba(0,0,0,.15);
+                 -moz-box-shadow: 0 1px 8px rgba(0,0,0,.15);
+                      box-shadow: 0 1px 8px rgba(0,0,0,0.15);
+            }
+            .form-signin .form-signin-heading,
+            .form-signin .checkbox {
+              margin-bottom: 10px;
+            }
+            .form-signin input[type="text"],
+            .form-signin input[type="password"] {
+              height: auto;
+              margin-bottom: 15px;
+              padding: 7px 9px;
+            }
+        </style>
+        <script language="javascript">
+        	window.onload = function() {
+  				document.getElementById("CacheUserName").focus();
+			};
+       </script>
+    </head>
+	<body>
+
+        <div class="container-fluid">
+            <form name="loginForm" class="form-signin" method="post" action="/csp/wdsfcotroller/wc/index.csp">
+                <p id="caption">WDSF Controller</p>
+                <input name="CacheLogin" value="1" type="hidden">
+                <input id="CacheUserName" type="text" class="input-block-level" name="CacheUserName" placeholder="Login" value="#($GET(%request.Data("CacheUserName", 1)))#" required>
+                <input type="password" class="input-block-level" name="CachePassword" placeholder="Password" required>
+                <button class="btn btn-small btn-primary" type="submit" style="font-size: 1em;">Login</button>
+                <span class="pull-right" style="color: red; padding: 5px 0 5px;">#(..GetLoginStatus())#</span>
+            </form>
+        </div>
+	</body>
+	</html>>
+	
+	Quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetLoginStatus">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set login = $GET(%request.Data("CacheUserName", 1))
+	set password = $GET(%request.Data("CachePassword", 1))
+	
+	if (login '= "") && (password '= "") && ($SYSTEM.Security.Login(login, password) = $$$NO){
+		q "Access denied"
+	}
+	q ""
+]]></Implementation>
+</Method>
+</Class>
+</Export>

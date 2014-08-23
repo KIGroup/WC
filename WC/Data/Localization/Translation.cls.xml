@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Localization.Translation">
+<TimeCreated>63286,49912.484865</TimeCreated>
+
+<Method name="PersonLTextValue">
+<Description>
+Name translation method; if language is unknown, returns input string</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>inputStr:%Text,fromLang:%String,toLang:%String</FormalSpec>
+<ReturnType>%Text</ReturnType>
+<Implementation><![CDATA[
+	set outputStr = ""
+	
+	for i=1:1:$L(inputStr){
+		set inputChar = $E(inputStr, i)
+		set lower = $ZCONVERT(inputChar, "L")
+		set outputChar = $GET(^CacheMsg("WC", fromLang, toLang, lower), inputChar)
+		if (lower '= inputChar) set outputChar = $ZCONVERT($E(outputChar, 1), "U")_$E(outputChar, 2, *)
+		set outputStr = outputStr_outputChar
+	}
+	
+	quit outputStr
+]]></Implementation>
+</Method>
+
+<Method name="Init">
+<Description>
+Translation dictionary</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set ^CacheMsg("WC", "ru", "en", "а") = "a"
+	set ^CacheMsg("WC", "ru", "en", "б") = "b"
+	set ^CacheMsg("WC", "ru", "en", "в") = "v"
+	set ^CacheMsg("WC", "ru", "en", "г") = "g"
+	set ^CacheMsg("WC", "ru", "en", "д") = "d"
+	set ^CacheMsg("WC", "ru", "en", "е") = "e"
+	set ^CacheMsg("WC", "ru", "en", "ё") = "e"
+	set ^CacheMsg("WC", "ru", "en", "ж") = "zh"
+	set ^CacheMsg("WC", "ru", "en", "з") = "z"
+	set ^CacheMsg("WC", "ru", "en", "и") = "i"
+	set ^CacheMsg("WC", "ru", "en", "й") = "y"
+	set ^CacheMsg("WC", "ru", "en", "к") = "k"
+	set ^CacheMsg("WC", "ru", "en", "л") = "l"
+	set ^CacheMsg("WC", "ru", "en", "м") = "m"
+	set ^CacheMsg("WC", "ru", "en", "н") = "n"
+	set ^CacheMsg("WC", "ru", "en", "о") = "o"
+	set ^CacheMsg("WC", "ru", "en", "п") = "p"
+	set ^CacheMsg("WC", "ru", "en", "р") = "r"	
+	set ^CacheMsg("WC", "ru", "en", "с") = "s"
+	set ^CacheMsg("WC", "ru", "en", "т") = "t"
+	set ^CacheMsg("WC", "ru", "en", "у") = "u"
+	set ^CacheMsg("WC", "ru", "en", "ф") = "f"
+	set ^CacheMsg("WC", "ru", "en", "х") = "kh"
+	set ^CacheMsg("WC", "ru", "en", "ц") = "ts"
+	set ^CacheMsg("WC", "ru", "en", "ч") = "ch"
+	set ^CacheMsg("WC", "ru", "en", "ш") = "sh"
+	set ^CacheMsg("WC", "ru", "en", "щ") = "shch"	
+	set ^CacheMsg("WC", "ru", "en", "ь") = ""
+	set ^CacheMsg("WC", "ru", "en", "ъ") = ""
+	set ^CacheMsg("WC", "ru", "en", "ы") = ""
+	set ^CacheMsg("WC", "ru", "en", "э") = "e"
+	set ^CacheMsg("WC", "ru", "en", "ю") = "yu"
+	set ^CacheMsg("WC", "ru", "en", "я") = "ya"
+	
+	// Reverse translation is not good enough
+	set ^CacheMsg("WC", "en", "ru", "a") = "а"
+	set ^CacheMsg("WC", "en", "ru", "b") = "б"
+	set ^CacheMsg("WC", "en", "ru", "c") = "ц"
+	set ^CacheMsg("WC", "en", "ru", "d") = "д"
+	set ^CacheMsg("WC", "en", "ru", "e") = "е"
+	set ^CacheMsg("WC", "en", "ru", "f") = "ф"
+	set ^CacheMsg("WC", "en", "ru", "g") = "ж"
+	set ^CacheMsg("WC", "en", "ru", "h") = "ш"
+	set ^CacheMsg("WC", "en", "ru", "i") = "и"
+	set ^CacheMsg("WC", "en", "ru", "j") = "й"
+	set ^CacheMsg("WC", "en", "ru", "k") = "к"
+	set ^CacheMsg("WC", "en", "ru", "l") = "л"
+	set ^CacheMsg("WC", "en", "ru", "m") = "м"
+	set ^CacheMsg("WC", "en", "ru", "n") = "н"
+	set ^CacheMsg("WC", "en", "ru", "o") = "о"
+	set ^CacheMsg("WC", "en", "ru", "p") = "п"
+	set ^CacheMsg("WC", "en", "ru", "r") = "р"
+	set ^CacheMsg("WC", "en", "ru", "s") = "с"	
+	set ^CacheMsg("WC", "en", "ru", "q") = "ку"
+	set ^CacheMsg("WC", "en", "ru", "t") = "т"
+	set ^CacheMsg("WC", "en", "ru", "u") = "у"
+	set ^CacheMsg("WC", "en", "ru", "v") = "в"
+	set ^CacheMsg("WC", "en", "ru", "w") = "в"
+	set ^CacheMsg("WC", "en", "ru", "x") = "кс"
+	set ^CacheMsg("WC", "en", "ru", "y") = "у"
+	set ^CacheMsg("WC", "en", "ru", "z") = "з"
+]]></Implementation>
+</Method>
+</Class>
+</Export>

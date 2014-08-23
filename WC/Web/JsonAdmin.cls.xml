@@ -5,11 +5,20 @@
 <TimeCreated>63370,70836.6459</TimeCreated>
 
 <Method name="Registration">
+<Description>
+
+=============================================================================================================================
+Registration / Deregistration                                                                   Registration / Deregistration
+=============================================================================================================================
+
+Create participant for competition
+Method="POST" Url="/registration"</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>data:%ZEN.proxyObject=""</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	try{
+		set %response = ##class(%ZEN.proxyObject).%New()	
 		if '$ISOBJECT(data){
 			$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
 		}
@@ -24,6 +33,7 @@
 		// Recorder. Verify existence.
 		set recorder = ##class(WC.Data.Recorder).GetCurrentRecorder(.st)
 		if $$$ISERR(st)	{
+			set %response.Status = "400"
 			set otherInfo = ##class(%ZEN.proxyObject).%New()
 			set otherInfo.recorder = $UserName
 			return ##class(WC.Utils.Msg).GetResponseObject("error_Recorder_NotFound", otherInfo).%ToJSON()
@@ -32,13 +42,13 @@
 		// Competition. Verify existence.
 		set competition = ##class(WC.Data.Competition).%OpenId(data.competitionId,,.st)
 		if $$$ISERR(st) {
-			set otherInfo = ##class(%ZEN.proxyObject).%New()
-			set otherInfo.competitionId = data.competitionId
-			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_NotFound", otherInfo).%ToJSON()
+			set %response.Status = "400"
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_NotFound").%ToJSON()
 		}
 		
 		// Competition. Verify status
 		if (competition.CStatus.Name '= "Registering") {
+			set %response.Status = "400"
 			set otherInfo = ##class(%ZEN.proxyObject).%New()
 			set otherInfo.competitionStatus = competition.CStatus.Name
 			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_UnusableStatus", otherInfo).%ToJSON()
@@ -46,6 +56,7 @@
 		
 		// Check recorder privileges
 		if $$$ISERR(##class(WC.Data.Recorder).CheckPrivileges(recorder.%Id(), competition.Tournament.%Id())) {
+			set %response.Status = "400"
 			set otherInfo = ##class(%ZEN.proxyObject).%New()
 			set otherInfo.recorder = recorder.Login
 			set otherInfo.tournamentId = competition.Tournament.%Id()
@@ -69,6 +80,8 @@
 				set otherInfo.conflict.day = $ZD(cmpConflictWoman.StartDate, 3)
 				set otherInfo.womanNumber = data.womanNumber
 			}
+			
+			set %response.Status = "400"
 			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Conflict_SameDayRegistration", otherInfo).%ToJSON()
 		}
 		
@@ -79,6 +92,7 @@
 			
 			// Only one number needed, not two
 			if (data.manNumber '= "") && (data.womanNumber '= ""){
+				set %response.Status = "400"
 				set otherInfo = ##class(%ZEN.proxyObject).%New()
 				set otherInfo.isSolo = $$$YES
 				return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Solo_OnlyOneNumberIsRequired", otherInfo).%ToJSON()
@@ -86,6 +100,7 @@
 			
 			// Only one number needed
 			if (data.manNumber = "") && (data.womanNumber = ""){
+				set %response.Status = "400"
 				set otherInfo = ##class(%ZEN.proxyObject).%New()
 				set otherInfo.isSolo = $$$YES
 				return ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_EmptyNumber", otherInfo).%ToJSON()
@@ -98,11 +113,14 @@
 			
 			// Two numbers is needed
 			if (data.manNumber = "") || (data.womanNumber = ""){
+				set %response.Status = "400"
 				set otherInfo = ##class(%ZEN.proxyObject).%New()
 				set otherInfo.isSolo = $$$NO
 				return ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_EmptyNumber", otherInfo).%ToJSON()
 			}	
 		}
+		
+		do ##class(WC.Utils.Journal).Create("Registration start", "Web.JsonAdmin.Registration()", "Before creating participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_data.manNumber_"; data.womanNumber="_data.womanNumber)
 		
 		TSTART
 		
@@ -110,10 +128,14 @@
 		
 		if $$$ISERR(st) {
 			TROLLBACK
+			set %response.Status = "400"
 			return response.%ToJSON()
 		}
 		
 		TCOMMIT
+		
+		do ##class(WC.Utils.Journal).Create("Registration end", "Web.JsonAdmin.Registration()", "After creating participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_data.manNumber_"; data.womanNumber="_data.womanNumber)
+		
 		do ##class(WC.Utils.Msg).GetResponseObject("success_Registration_Completed").%ToJSON()	
 	}
 	catch(ex){
@@ -129,6 +151,9 @@
 </Method>
 
 <Method name="Deregistration">
+<Description>
+Remove participant from competition
+Method="POST" Url="/deregistration"</Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>data:%ZEN.proxyObject=""</FormalSpec>
 <ReturnType>%Status</ReturnType>
@@ -148,6 +173,7 @@
 		// Recorder. Verify existence.
 		set recorder = ##class(WC.Data.Recorder).GetCurrentRecorder(.st)
 		if $$$ISERR(st)	{
+			set %response.Status = "400"
 			set otherInfo = ##class(%ZEN.proxyObject).%New()
 			set otherInfo.recorder = $UserName
 			return ##class(WC.Utils.Msg).GetResponseObject("error_Recorder_NotFound", otherInfo).%ToJSON()
@@ -156,13 +182,13 @@
 		// Competition. Verify existence.
 		set competition = ##class(WC.Data.Competition).%OpenId(data.competitionId,,.st)
 		if $$$ISERR(st) {
-			set otherInfo = ##class(%ZEN.proxyObject).%New()
-			set otherInfo.competitionId = data.competitionId
+			set %response.Status = "400"
 			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_NotFound", otherInfo).%ToJSON()
 		}
 		
 		// Competition. Verify status
 		if (competition.CStatus.Name '= "Registering") {
+			set %response.Status = "400"
 			set otherInfo = ##class(%ZEN.proxyObject).%New()
 			set otherInfo.competitionStatus = competition.CStatus.Name
 			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_UnusableStatus", otherInfo).%ToJSON()
@@ -170,6 +196,7 @@
 		
 		// Check recorder privileges
 		if $$$ISERR(##class(WC.Data.Recorder).CheckPrivileges(recorder.%Id(), competition.Tournament.%Id())) {
+			set %response.Status = "400"
 			set otherInfo = ##class(%ZEN.proxyObject).%New()
 			set otherInfo.recorder = recorder.Login
 			set otherInfo.tournamentId = competition.Tournament.%Id()
@@ -183,6 +210,7 @@
 			
 			// Only one number needed, not two
 			if (data.manNumber '= "") && (data.womanNumber '= ""){
+				set %response.Status = "400"
 				set otherInfo = ##class(%ZEN.proxyObject).%New()
 				set otherInfo.isSolo = $$$YES
 				return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Solo_OnlyOneNumberIsRequired", otherInfo).%ToJSON()
@@ -195,11 +223,14 @@
 			
 			// Two numbers is needed
 			if (data.manNumber = "") || (data.womanNumber = ""){
+				set %response.Status = "400"
 				set otherInfo = ##class(%ZEN.proxyObject).%New()
 				set otherInfo.isSolo = $$$NO
 				return ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_EmptyNumber", otherInfo).%ToJSON()
 			}	
 		}
+		
+		do ##class(WC.Utils.Journal).Create("Deregistration start", "Web.JsonAdmin.Deregistration()", "Before removing participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_data.manNumber_"; data.womanNumber="_data.womanNumber)
 		
 		TSTART
 		
@@ -207,10 +238,14 @@
 		
 		if $$$ISERR(st) {
 			TROLLBACK
+			set %response.Status = "400"
 			return response.%ToJSON()
 		}
 		
 		TCOMMIT
+		
+		do ##class(WC.Utils.Journal).Create("Deregistration end", "Web.JsonAdmin.Deregistration()", "After removing participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_data.manNumber_"; data.womanNumber="_data.womanNumber)
+		
 		do ##class(WC.Utils.Msg).GetResponseObject("success_Registration_Removed").%ToJSON()	
 	}
 	catch(ex){
@@ -222,6 +257,784 @@
 	}	
 	
 	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetTournament">
+<Description>
+
+=============================================================================================================================
+Tournament                                                                                                         Tournament
+=============================================================================================================================
+
+Get one tournament by Id
+Method="GET" Url="/tournament/:id"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set tr = ##class(WC.Data.Tournament).%OpenId(id,,.st)
+		if $$$ISERR(st) {
+			set %response.Status = "400"	
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Tournament_NotFound").%ToJSON()
+		}
+		
+		do tr.ConvertToProxyObject().%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetTournaments">
+<Description><![CDATA[
+Get list of tournaments by filter params
+Method="GET" Url="/couple". Filter example params: ?from=2014-01-01&to=2014-01-31"]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set from = $REPLACE($GET(%request.Data("from", 1)), "/", "-")
+		set to = $REPLACE($GET(%request.Data("to", 1)), "/", "-")
+		set notrecorderId = $GET(%request.Data("notrecorderId", 1))
+		
+		set dateMatcher = ##class(%Regex.Matcher).%New("^[0-9]{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2][0-9]|3[0-1])")
+		
+		set where = ""
+		if (from '= ""){
+			if (dateMatcher.Match(from) = $$$NO){
+				set %response.Status = "400"	
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Date_NotValid").%ToJSON()
+			}
+			
+			set where = "StartDate >= "_$ZDH(from, 3)_" AND "
+		}
+		
+		if (to '= ""){
+			if (dateMatcher.Match(to) = $$$NO){
+				set %response.Status = "400"	
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Date_NotValid").%ToJSON()
+			}
+			set where = where_"EndDate <= "_$ZDH(to, 3)_" AND "
+		}
+		
+		if (notrecorderId '= ""){
+			set where = where_"ID NOT IN (SELECT AvailableTournaments FROM WC_Data.Recorder_AvailableTournaments WHERE Recorder = '"_..ParseParameter(notrecorderId)_"') AND "
+		}
+		
+		if (where '= ""){
+			// remove last " AND "
+			set where = "WHERE "_$E(where, 1, *-5)_" "
+		}
+		
+		set sql = "SELECT TOP 200 ID "_
+				  "FROM WC_Data.Tournament "_
+				  where_
+				  "ORDER BY StartDate"
+		
+		set statement = ##class(%SQL.Statement).%New()	
+		$$$THROWONERROR(st, statement.%Prepare(sql))		
+		set rs = statement.%Execute()
+
+		set proxy = ##class(%ZEN.proxyObject).%New()
+		set proxy.tournaments = ##class(%ListOfObjects).%New()
+		while (rs.%Next() '= 0){
+			do proxy.tournaments.Insert(##class(WC.Data.Tournament).%OpenId(rs.%GetData(1)).ConvertToProxyObject())
+		}
+		
+		do rs.%Close()						
+		do statement.%Close()
+		
+		do proxy.%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetTournamentsForGrid">
+<Description><![CDATA[
+Get list of tournaments for GRID
+Method="GET" Url="/grid/tournament". Filter example params: ?first=1&last=10&sqlName=StartDate&isDown=1&searchSqlName=Title&searchText=Hello ]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set params = ##class(%ZEN.proxyObject).%New()
+		set params.first = $GET(%request.Data("first", 1), 1)
+		set params.last = $GET(%request.Data("last", 1), 10)
+		set params.searchSqlName = $GET(%request.Data("searchSqlName", 1), "Login")
+		set params.searchText = $GET(%request.Data("searchText", 1), "")
+		set params.isDown = $GET(%request.Data("isDown", 1), $$$YES)
+		set params.sqlName = $GET(%request.Data("sqlName", 1), "Login")
+		
+		set recorderId = $GET(%request.Data("recorderId", 1))
+		set whereRequired = ""
+		if (recorderId '= ""){
+			set whereRequired = "ID IN (SELECT AvailableTournaments FROM WC_Data.Recorder_AvailableTournaments WHERE Recorder = '"_..ParseParameter(recorderId)_"')"
+		}
+		
+      	$$$THROWONERROR(st, ..WriteJsonForGrid("SELECT ID FROM WC_Data.Tournament", "WC.Data.Tournament", params, whereRequired))
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetCompetition">
+<Description>
+
+=============================================================================================================================
+Competition                                                                                                       Competition
+=============================================================================================================================
+
+Get one competition by id
+Method="GET" Url="/competition/:id"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set cmp = ##class(WC.Data.Competition).%OpenId(id,,.st)
+		if $$$ISERR(st) {
+			set %response.Status = "400"	
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_NotFound").%ToJSON()
+		}
+		
+		do cmp.ConvertToProxyObject().%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetCompetitions">
+<Description><![CDATA[
+Get list of competitions by filter params
+Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014-11-31&status=Closed&tournamentId=1"]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set tournamentId = $GET(%request.Data("tournamentId", 1))
+		set status = $GET(%request.Data("status", 1))
+		set from = $REPLACE($GET(%request.Data("from", 1)), "/", "-")
+		set to = $REPLACE($GET(%request.Data("to", 1)), "/", "-")
+		
+		set dateMatcher = ##class(%Regex.Matcher).%New("^[0-9]{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2][0-9]|3[0-1])")
+		
+		set where = ""
+		if (from '= ""){
+			if (dateMatcher.Match(from) = $$$NO){
+				set %response.Status = "400"	
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Date_NotValid").%ToJSON()
+			}
+			
+			set where = "StartDate >= "_$ZDH(from, 3)_" AND "
+		}
+		
+		if (to '= ""){
+			if (dateMatcher.Match(to) = $$$NO){
+				set %response.Status = "400"	
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Date_NotValid").%ToJSON()
+			}
+			set where = where_"StartDate <= "_$ZDH(to, 3)_" AND "
+		}
+		
+		if (status '= ""){
+			set where = where_"CStatus->Name = '"_..ParseParameter(status)_"' AND "
+		}
+		
+		if (tournamentId '= ""){
+			set where = where_"Tournament = '"_..ParseParameter(tournamentId)_"' AND "
+		}
+		
+		if (where '= ""){
+			// remove last " AND "
+			set where = "WHERE "_$E(where, 1, *-5)_" "
+		}
+		
+		set sql = "SELECT TOP 200 ID "_
+				  "FROM WC_Data.Competition "_
+				  where_
+				  "ORDER BY StartDate"
+		
+		set statement = ##class(%SQL.Statement).%New()	
+		$$$THROWONERROR(st, statement.%Prepare(sql))		
+		set rs = statement.%Execute()
+
+		set proxy = ##class(%ZEN.proxyObject).%New()
+		set proxy.competitions = ##class(%ListOfObjects).%New()
+		while (rs.%Next() '= 0){
+			do proxy.competitions.Insert(##class(WC.Data.Competition).%OpenId(rs.%GetData(1)).ConvertToProxyObject())
+		}
+		
+		do rs.%Close()						
+		do statement.%Close()
+		
+		do proxy.%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetCompetitionsForGrid">
+<Description><![CDATA[
+Get list of competitions for GRID
+Method="GET" Url="/grid/competition". Filter example params: ?first=1&last=10&sqlName=StartDate&isDown=1&searchSqlName=Title&searchText=Hello ]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set tournamentId = $GET(%request.Data("tournamentId", 1))
+		set params = ##class(%ZEN.proxyObject).%New()
+		set params.first = $GET(%request.Data("first", 1), 1)
+		set params.last = $GET(%request.Data("last", 1), 10)
+		set params.searchSqlName = $GET(%request.Data("searchSqlName", 1), "Discipline->Name")
+		set params.searchText = $GET(%request.Data("searchText", 1), "")
+		set params.isDown = $GET(%request.Data("isDown", 1), $$$YES)
+		set params.sqlName = $GET(%request.Data("sqlName", 1), "Discipline->Name")
+		
+      	$$$THROWONERROR(st, ..WriteJsonForGrid("SELECT ID FROM WC_Data.Competition", "WC.Data.Competition", params))
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetCompetitionYears">
+<Description>
+Get all years
+Method="GET" Url="/year"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.children = ##class(%ListOfDataTypes).%New()
+	
+	&sql(DECLARE CursYear CURSOR FOR 
+		 	SELECT DISTINCT DATEPART('year', StartDate) As Year
+			FROM WC_Data.Competition
+			ORDER BY Year)	
+		
+	&sql(OPEN CursYear)
+	for  
+	{	
+		&sql(FETCH CursYear INTO :year) 
+		quit:(SQLCODE '= 0)
+		do proxy.children.Insert(year)	
+	}
+	
+	&sql(CLOSE CursYear)
+	
+	quit proxy.%ToJSON()
+]]></Implementation>
+</Method>
+
+<Method name="GetParticipant">
+<Description>
+=============================================================================================================================
+Participant                                                                                                       Participant
+=============================================================================================================================
+
+Get one participant by id
+Method="GET" Url="/participant/:id"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set prt = ##class(WC.Data.Participant).%OpenId(id,,.st)
+		if $$$ISERR(st) {
+			set %response.Status = "400"	
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Participant_NotFound").%ToJSON()
+		}
+		
+		do prt.ConvertToProxyObject().%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetParticipants">
+<Description>
+Get list of participants by filter params
+Method="GET" Url="/participant". Filter example params: ?competitionId=1"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set competitionId = $GET(%request.Data("competitionId", 1))
+		
+		set where = ""
+		if (competitionId '= ""){
+			set where = where_"Competition = '"_..ParseParameter(competitionId)_"' AND "
+		}
+		
+		if (where '= ""){
+			// remove last " AND "
+			set where = "WHERE "_$E(where, 1, *-5)_" "
+		}
+		
+		set sql = "SELECT TOP 200 ID "_
+				  "FROM WC_Data.Participant "_
+				  where_
+				  "ORDER BY Competition->StartDate"
+		
+		set statement = ##class(%SQL.Statement).%New()	
+		$$$THROWONERROR(st, statement.%Prepare(sql))		
+		set rs = statement.%Execute()
+
+		set proxy = ##class(%ZEN.proxyObject).%New()
+		set proxy.participants = ##class(%ListOfObjects).%New()
+		while (rs.%Next() '= 0){
+			do proxy.participants.Insert(##class(WC.Data.Participant).%OpenId(rs.%GetData(1)).ConvertToProxyObject())
+		}
+		
+		do rs.%Close()						
+		do statement.%Close()
+		
+		do proxy.%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetCouple">
+<Description>
+
+=============================================================================================================================
+Couple                                                                                                                 Couple
+=============================================================================================================================
+
+Get one couple by Id
+Method="GET" Url="/couple/:id"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set pr = ##class(WC.Data.Couple).%OpenId(id,,.st)
+		if $$$ISERR(st) {
+			set %response.Status = "400"	
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Couple_NotFound").%ToJSON()
+		}
+		
+		do pr.ConvertToProxyObject().%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetCouples">
+<Description>
+Get list of couples by filter params
+Method="GET" Url="/couple". Filter example params: ?min=1000232"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set min = ..ParseParameter($GET(%request.Data("min", 1)))
+		
+		set where = ""
+		if (min '= ""){
+			set where = "(Man = '"_min_"' OR Woman = '"_min_"') AND "
+		}
+		
+		if (where '= ""){
+			// remove last " AND "
+			set where = "WHERE "_$E(where, 1, *-5)_" "
+		}
+		
+		set sql = "SELECT TOP 200 ID "_
+				  "FROM WC_Data.Couple "_
+				  where_
+				  "ORDER BY Man->Surname"
+		
+		set statement = ##class(%SQL.Statement).%New()	
+		$$$THROWONERROR(st, statement.%Prepare(sql))		
+		set rs = statement.%Execute()
+
+		set proxy = ##class(%ZEN.proxyObject).%New()
+		set proxy.couples = ##class(%ListOfObjects).%New()
+		while (rs.%Next() '= 0){
+			do proxy.couples.Insert(##class(WC.Data.Couple).%OpenId(rs.%GetData(1)).ConvertToProxyObject())
+		}
+		
+		do rs.%Close()						
+		do statement.%Close()
+		
+		do proxy.%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetPerson">
+<Description>
+=============================================================================================================================
+Person                                                                                                                 Person
+=============================================================================================================================
+
+Get one person by id
+Method="GET" Url="/person/:id"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set pr = ##class(WC.Data.Person).%OpenId(id,,.st)
+		if $$$ISERR(st) {
+			set %response.Status = "400"	
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Person_NotFound").%ToJSON()
+		}
+		
+		do pr.ConvertToProxyObject().%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetPersons">
+<Description>
+Get list of persons by filter params
+Method="GET" Url="/person". Filter example params: ?name=Ivanov"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set name = ..ParseParameter($GET(%request.Data("name", 1)))
+		
+		set where = ""
+		if (name '= ""){
+			set where = "(Surname LIKE '%"_name_"%' OR Name Like '%"_name_"%') AND "
+		}
+		
+		if (where '= ""){
+			// remove last " AND "
+			set where = "WHERE "_$E(where, 1, *-5)_" "
+		}
+		
+		set sql = "SELECT TOP 200 ID "_
+				  "FROM WC_Data.Person "_
+				  where_
+				  "ORDER BY Surname"
+		
+		set statement = ##class(%SQL.Statement).%New()	
+		$$$THROWONERROR(st, statement.%Prepare(sql))		
+		set rs = statement.%Execute()
+
+		set proxy = ##class(%ZEN.proxyObject).%New()
+		set proxy.persons = ##class(%ListOfObjects).%New()
+		while (rs.%Next() '= 0){
+			do proxy.persons.Insert(##class(WC.Data.Person).%OpenId(rs.%GetData(1)).ConvertToProxyObject())
+		}
+		
+		do rs.%Close()						
+		do statement.%Close()
+		
+		do proxy.%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="SaveRecorder">
+<Description>
+
+=============================================================================================================================
+Recorder                                                                                                             Recorder
+=============================================================================================================================
+
+Save recorder
+Method="POST" Url="/recorder"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
+      	
+      	do ##class(WC.Data.Recorder).Save(data, .st)
+      	
+      	if $$$ISERR(st){ 
+      		$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus($CASE(data.id = "", 1:"error_Recorder_Create", :"error_Recorder_Save"), "| "_st)) 
+      	}
+	}
+	catch ex {
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetRecorder">
+<Description>
+Get recorder by id
+Method="GET" Url="/recorder/:id"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	
+	quit ..GetProxyObject("WC.Data.Recorder", id).%ToJSON()
+]]></Implementation>
+</Method>
+
+<Method name="DeleteRecorder">
+<Description>
+Delete recorder by id
+Method="DELETE" Url="/recorder/:id"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set recorder = ##class(WC.Data.Recorder).%OpenId(id)
+		set recorder.IsInUse = $$$NO
+		set recorder.Login = recorder.Login_"|"_recorder.%Id()
+		set st = recorder.%Save() 
+		
+      	if $$$ISERR(st){ 
+      		$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus("error_Recorder_MarkUnused", "| "_st))
+      	}      	
+	}
+	catch ex {
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetRecordersForGrid">
+<Description><![CDATA[
+Get list of recorders for GRID
+Method="GET" Url="/grid/recorder". Filter example params: ?first=1&last=10&sqlName=StartDate&isDown=1&searchSqlName=Title&searchText=Hello]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set params = ##class(%ZEN.proxyObject).%New()
+		set params.first = $GET(%request.Data("first", 1), 1)
+		set params.last = $GET(%request.Data("last", 1), 10)
+		set params.searchSqlName = $GET(%request.Data("searchSqlName", 1), "Login")
+		set params.searchText = $GET(%request.Data("searchText", 1), "")
+		set params.isDown = $GET(%request.Data("isDown", 1), $$$YES)
+		set params.sqlName = $GET(%request.Data("sqlName", 1), "Login")
+		
+      	$$$THROWONERROR(st, ..WriteJsonForGrid("SELECT ID FROM WC_Data.Recorder", "WC.Data.Recorder", params, "IsInUse=1"))
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="CreateTournamentPrivilegeForRecorder">
+<Description>
+Create tournament privilege for recorder
+Method="POST" Url="/recorder/:recId/tournament/:trnId"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>recId:%String,trnId:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set st = ##class(WC.Data.Recorder).AddAvailableTournament(##class(WC.Data.Recorder).%OpenId(recId), ##class(WC.Data.Tournament).%OpenId(trnId))
+		if $$$ISERR(st){ 
+      		$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus("error_Recorder_AddTournament", "| "_st))
+      	} 
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="RemoveTournamentPrivilegeForRecorder">
+<Description>
+Delete tournament privilege for recorder
+Method="DELETE" Url="/recorder/:recId/tournament/:trnId"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>recId:%String,trnId:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set st = ##class(WC.Data.Recorder).RemoveAvailableTournament(##class(WC.Data.Recorder).%OpenId(recId), ##class(WC.Data.Tournament).%OpenId(trnId))
+		if $$$ISERR(st){ 
+      		$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus("error_Recorder_RemoveTournament", "| "_st))
+      	} 
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetLanguages">
+<Description>
+
+=============================================================================================================================
+Other                                                                                                                   Other
+=============================================================================================================================
+
+Write to device "children" array of proxyObjects [All System languages]
+Method="GET" Url="/language"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set status = $$$OK
+	
+	try{		
+		set list = ##class(%ListOfObjects).%New()
+		
+		&sql(DECLARE LangCurs CURSOR FOR
+			 SELECT Code, Name 
+			 FROM WC_Data_Localization.LTextLanguage
+			 ORDER BY Code)
+		
+		&sql(OPEN LangCurs)
+		for{
+			&sql(FETCH LangCurs INTO :code, :name) 
+			quit:(SQLCODE '= 0)
+			
+			set proxy = ##class(%ZEN.proxyObject).%New()
+			set proxy.code = code
+			set proxy.name = name
+			set proxy.flagUrl = "img/flags/"_code_".png"
+			
+			do list.Insert(proxy)	
+		}
+		
+		&sql(CLOSE LangCurs)
+		
+		set proxy = ##class(%ZEN.proxyObject).%New()
+		set proxy.children = list
+		do proxy.%ToJSON()
+	}
+	catch(ex){
+		set status = ex.AsStatus()
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="CheckPrivileges">
+<Description>
+Check access, authorization call, if needed
+Method="GET" Url="/checkprivileges"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.userName = $Username
+	set proxy.isAdmin = 0
+	
+	//if (##class(WC.Data.Equipment).CheckUpdatePrivilege() = $$$OK){
+		set proxy.isAdmin = 1
+	//}
+	
+	do proxy.%ToJSON()
+	
+ 	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="KillSession">
+<Description>
+Kill session for rest
+Method="GET" Url="/killsession"</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set %session.AppTimeout = 1
+	set %session.EndSession = 1
+	q $$$OK
 ]]></Implementation>
 </Method>
 </Class>

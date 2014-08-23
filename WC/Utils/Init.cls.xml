@@ -10,8 +10,8 @@ do ##class(WC.Utils.Init).Initialize()</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	do ..KillThemAll()
-	
+	//do ..KillThemAll()
+	/*
 	w !,"WC.Data.Country"
 	do ##class(WC.Data.Country).Import()
 	w !,"WC.Data.CompetitionStatus"
@@ -24,6 +24,16 @@ do ##class(WC.Utils.Init).Initialize()</Description>
 	do ##class(WC.Data.Division).Import()
 	w !,"WC.Data.AgeGroup"
 	do ##class(WC.Data.AgeGroup).Import()
+	*/
+	set lang = ##class(WC.Data.Localization.LTextLanguage).%New()
+	set lang.Code = "ru"
+	set lang.Name = "Русский"
+	do lang.%Save()
+	
+	set lang = ##class(WC.Data.Localization.LTextLanguage).%New()
+	set lang.Code = "en"
+	set lang.Name = "English"
+	do lang.%Save()
 ]]></Implementation>
 </Method>
 
@@ -31,6 +41,10 @@ do ##class(WC.Utils.Init).Initialize()</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
+	do ##class(WC.Data.Localization.LTextLanguage).%KillExtent()
+	do ##class(WC.Data.Localization.LTextValue).%KillExtent()
+	do ##class(WC.Data.Localization.LText).%KillExtent()
+	
 	do ##class(WC.Data.Competition).%KillExtent()
 	do ##class(WC.Data.Tournament).%KillExtent()
 	do ##class(WC.Data.CompetitionStatus).%KillExtent()

@@ -14,6 +14,11 @@
 <Required>1</Required>
 </Property>
 
+<Property name="CreatedTS">
+<Type>%TimeStamp</Type>
+<Required>1</Required>
+</Property>
+
 <Method name="IsExists">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>competitionId:%String,manNumber:%String,womanNumber:%String</FormalSpec>
@@ -35,6 +40,16 @@
 	}
 	
 	quit $$$NO
+]]></Implementation>
+</Method>
+
+<Method name="%OnNew">
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<ServerOnly>1</ServerOnly>
+<Implementation><![CDATA[
+	set ..CreatedTS = $ZDT($ZTS, 3)
+	Quit $$$OK
 ]]></Implementation>
 </Method>
 

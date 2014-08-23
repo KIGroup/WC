@@ -14,6 +14,20 @@
 <Unique>1</Unique>
 </Index>
 
+<Method name="ConvertToProxyObject">
+<FormalSpec>fullInfo:%Boolean=0</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.id = ..%Id()
+	set proxy.selfLink = "http://"_##class(Settings).GetWebAppDomain()_##class(Settings).GetWebAppAdmin()_"/participant/"_..%Id()
+	set proxy.competition = ..Competition.ConvertToProxyObject()
+	set proxy.couple = ..Couple.ConvertToProxyObject()
+	
+	quit proxy
+]]></Implementation>
+</Method>
+
 <Method name="Create">
 <ClassMethod>1</ClassMethod>
 <FormalSpec><![CDATA[recorder:Recorder,competition:Competition,data:%RegisteredObject,*response:%RegisteredObject,&st:%Status]]></FormalSpec>

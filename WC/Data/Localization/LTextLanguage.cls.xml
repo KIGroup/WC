@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Localization.LTextLanguage">
+<Description>
+Available languages</Description>
+<Super>%Persistent,%XML.Adaptor</Super>
+<TimeCreated>63273,7106.083188</TimeCreated>
+
+<Property name="Name">
+<Description>
+Name</Description>
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="Code">
+<Description>
+Two-letter code = ID</Description>
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Index name="CodeIdx">
+<IdKey>1</IdKey>
+<Properties>Code</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Property name="Values">
+<Type>WC.Data.Localization.LTextValue</Type>
+<Cardinality>many</Cardinality>
+<Inverse>Lang</Inverse>
+<Relationship>1</Relationship>
+</Property>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.LD180.LTextLanguageD</DataLocation>
+<DefaultData>LTextLanguageDefaultData</DefaultData>
+<IdLocation>^WC.Data.LD180.LTextLanguageD</IdLocation>
+<IndexLocation>^WC.Data.LD180.LTextLanguageI</IndexLocation>
+<StreamLocation>^WC.Data.LD180.LTextLanguageS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="LTextLanguageDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>Name</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

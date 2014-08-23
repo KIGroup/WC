@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Web.KillSession">
+<Super>%CSP.Page</Super>
+<TimeCreated>63420,70324.661506</TimeCreated>
+
+<Method name="OnPage">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	
+	Do %session.Logout()
+	// Causes OnEndSession() to be called and the session is destroyed
+	Set %session.EndSession=1
+	set %session.AppTimeout = 1
+	Quit $$$OK
+]]></Implementation>
+</Method>
+</Class>
+</Export>

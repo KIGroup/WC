@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.Settings">
+<TimeCreated>63418,74531.275718</TimeCreated>
+
+<Method name="Init">
+<Description>
+do ##class(WC.Data.Settings).Init()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do ##class(WC.Data.Settings).SetWebAppDomain("localhost:57772")
+	do ##class(WC.Data.Settings).SetWebAppNamespace("/csp/wdsfcontroller")
+	do ##class(WC.Data.Settings).SetWebAppAdmin("/csp/wdsfcontroller/admin")
+]]></Implementation>
+</Method>
+
+<Method name="WriteAllSettings">
+<Description>
+do ##class(WC.Data.Settings).WriteAllSettings()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	w !, "-- Settings start -------------------------------------------------------"
+	
+	w !, "1 . GetWebAppNamespace() | "_..GetWebAppNamespace()
+	w !, "2 . GetWebAppAdmin()     | "_..GetWebAppAdmin()
+	w !, "4 . GetWebAppDomain()    | "_..GetWebAppDomain()
+
+	
+	w !, "-- Settings end -------------------------------------------------------",!
+]]></Implementation>
+</Method>
+
+<Method name="GetWebAppData">
+<Description>
+
+===========================================================================================================================================
+Web                                                                                                                                     Web
+===========================================================================================================================================
+</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>key:%String,defaultValue=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit $GET(^Settings("WC", "Web", key), defaultValue)
+]]></Implementation>
+</Method>
+
+<Method name="SetWebAppData">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>key:%String,value</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set ^Settings("WC", "Web", key) = value
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetWebAppNamespace">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWebAppData("Namespace")
+]]></Implementation>
+</Method>
+
+<Method name="SetWebAppNamespace">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWebAppData("Namespace", value)
+]]></Implementation>
+</Method>
+
+<Method name="GetWebAppAdmin">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWebAppData("AdminREST")
+]]></Implementation>
+</Method>
+
+<Method name="SetWebAppAdmin">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWebAppData("AdminREST", value)
+]]></Implementation>
+</Method>
+
+<Method name="GetWebAppUser">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWebAppData("UserREST")
+]]></Implementation>
+</Method>
+
+<Method name="SetWebAppUser">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWebAppData("UserREST", value)
+]]></Implementation>
+</Method>
+
+<Method name="GetWebAppDomain">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWebAppData("Domain")
+]]></Implementation>
+</Method>
+
+<Method name="SetWebAppDomain">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWebAppData("Domain", value)
+]]></Implementation>
+</Method>
+</Class>
+</Export>

@@ -8,15 +8,14 @@
 <Description>
 Get proxyObject by id and class</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec>className:%String,id:%String,convertParams:%ZEN.proxyObject=""</FormalSpec>
+<FormalSpec>className:%String,id:%String</FormalSpec>
 <ReturnType>%ZEN.proxyObject</ReturnType>
 <Implementation><![CDATA[
 	set proxy = ""
 	
 	try{
 		set object = $CLASSMETHOD(className, "%OpenId", id)
-		set jsonClassName = $CLASSMETHOD(className, "%GetParameter", "JsonClass")
-		set proxy = $CLASSMETHOD(jsonClassName, "ConvertToProxyObject", object, convertParams)
+		set proxy = object.ConvertToProxyObject()
 	}
 	catch (ex){
 		set proxy = ##class(%ZEN.proxyObject).%New()
@@ -50,7 +49,7 @@ Transform sql to json</Description>
 <Description>
 Paged output of table, for any class with parameters, sorting and searching</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec>sql:%String,className:%String,params:%RegisteredObject,whereRequired:%String="",groupCondition:%String="",convertParams:%ZEN.proxyObject=""</FormalSpec>
+<FormalSpec>sql:%String,className:%String,params:%RegisteredObject,whereRequired:%String="",groupCondition:%String=""</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	set status = $$$OK
@@ -86,7 +85,7 @@ Paged output of table, for any class with parameters, sorting and searching</Des
 		// Все элементы, попавшие в заданный диапазон конвертируются в proxy и помещаются в результирующий список
 		while (rs.%Next() '= 0){
 			if (rs.%ROWCOUNT >= params.first) && (rs.%ROWCOUNT <= params.last){
-				do proxyItems.Insert(..GetProxyObject(className, rs.%GetData(1), convertParams))
+				do proxyItems.Insert(..GetProxyObject(className, rs.%GetData(1)))
 			}
 		}
 		// Общее число элементов с заданными параметрами в WHERE
@@ -117,13 +116,12 @@ Delete "garbage" from input parameters</Description>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
 	set parameter = $ZCONVERT(parameter, "U")
+	set badWords = $LB("SELECT", "DELETE", "UNION", "FROM", "INSERT", "'")
+	for i=1:1:$LL(badWords){
+		set parameter = $REPLACE(parameter, $LIST(badWords, i), "")
+	}
 	
-	quit $REPLACE(
-		 $REPLACE(
-		 $REPLACE(
-		 $REPLACE(
-		 $REPLACE(
-		 $REPLACE(parameter, "SELECT",""), "DELETE", ""), "UNION", ""), "FROM",""), "INSERT", ""), "'", "")
+	quit parameter
 ]]></Implementation>
 </Method>
 </Class>

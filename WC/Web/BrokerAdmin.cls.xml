@@ -12,12 +12,118 @@
 <XData name="UrlMap">
 <Data><![CDATA[
 <Routes>
-<Route Method="GET" Url="/1/json/registration" Call="WC.Web.JsonAdmin:Registration"/>
 
-<Route Method="POST" Url="/1/json/registration" Call="WC.Web.JsonAdmin:Registration"/>
+<!-- ======================================================================================================================= -->
+<!-- Registration / Deregistration                                                             Registration / Deregistration -->
+<!-- ======================================================================================================================= -->
+
+<!-- Create participant for competition -->
+<Route Method="POST" Url="/registration" Call="WC.Web.JsonAdmin:Registration"/>
+
+<!-- Remove participant from competition -->
+<Route Method="POST" Url="/deregistration" Call="WC.Web.JsonAdmin:Deregistration"/>
 
 
-<Route Method="POST" Url="/1/json/deregistration" Call="WC.Web.JsonAdmin:Deregistration"/>
+<!-- ======================================================================================================================= -->
+<!-- Tournament                                                                                                   Tournament -->
+<!-- ======================================================================================================================= -->
+
+<!-- Get list of tournaments by filter params -->
+<Route Method="GET" Url="/tournament" Call="WC.Web.JsonAdmin:GetTournaments"/>
+
+<!-- Get one tournament by id -->
+<Route Method="GET" Url="/tournament/:id" Call="WC.Web.JsonAdmin:GetTournament"/>
+
+<!-- Get list of tournaments for GRID -->
+<Route Method="GET" Url="/grid/tournament" Call="WC.Web.JsonAdmin:GetTournamentsForGrid"/>
+
+
+<!-- ======================================================================================================================= -->
+<!-- Competition                                                                                                 Competition -->
+<!-- ======================================================================================================================= -->
+
+<!-- Get list of competitions by filter params -->
+<Route Method="GET" Url="/competition" Call="WC.Web.JsonAdmin:GetCompetitions"/>
+
+<!-- Get one competition by id -->
+<Route Method="GET" Url="/competition/:id" Call="WC.Web.JsonAdmin:GetCompetition"/>
+
+<!-- Get list of competitions for GRID -->
+<Route Method="GET" Url="/grid/competition" Call="WC.Web.JsonAdmin:GetCompetitionsForGrid"/>
+
+<!-- Get all years -->
+<Route Method="GET" Url="/year" Call="WC.Web.JsonAdmin:GetCompetitionYears"/>
+
+
+<!-- ======================================================================================================================= -->
+<!-- Participant                                                                                                 Participant -->
+<!-- ======================================================================================================================= -->
+
+<!-- Get list of participants -->
+<Route Method="GET" Url="/participant" Call="WC.Web.JsonAdmin:GetParticipants"/>
+
+<!-- Get list of participants -->
+<Route Method="GET" Url="/participant/:id" Call="WC.Web.JsonAdmin:GetParticipant"/>
+
+
+<!-- ======================================================================================================================= -->
+<!-- Person                                                                                                           Person -->
+<!-- ======================================================================================================================= -->
+
+<!-- Get list of persons by filter params -->
+<Route Method="GET" Url="/person" Call="WC.Web.JsonAdmin:GetPersons"/>
+
+<!-- Get one person by id -->
+<Route Method="GET" Url="/person/:id" Call="WC.Web.JsonAdmin:GetPerson"/>
+
+
+<!-- ======================================================================================================================= -->
+<!-- Couple                                                                                                           Couple -->
+<!-- ======================================================================================================================= -->
+
+<!-- Get list of couples by filter params -->
+<Route Method="GET" Url="/couple" Call="WC.Web.JsonAdmin:GetCouples"/>
+
+<!-- Get one couple by id -->
+<Route Method="GET" Url="/couple/:id" Call="WC.Web.JsonAdmin:GetCouple"/>
+
+
+<!-- ======================================================================================================================= -->
+<!-- Recorder                                                                                                       Recorder -->
+<!-- ======================================================================================================================= -->
+
+<!-- Save recorder -->
+<Route Method="POST" Url="/recorder" Call="WC.Web.JsonAdmin:SaveRecorder"/>
+
+<!-- Get recorder by id -->
+<Route Method="GET" Url="/recorder/:id" Call="WC.Web.JsonAdmin:GetRecorder"/>
+
+<!-- Delete recorder by id -->
+<Route Method="DELETE" Url="/recorder/:id" Call="WC.Web.JsonAdmin:DeleteRecorder"/>
+
+<!-- Get recorders for GRID -->
+<Route Method="GET" Url="/grid/recorder" Call="WC.Web.JsonAdmin:GetRecordersForGrid"/>
+
+<!-- Create tournament privilege for recorder -->
+<Route Method="POST" Url="/recorder/:recId/tournament/:trnId" Call="WC.Web.JsonAdmin:CreateTournamentPrivilegeForRecorder"/>
+
+<!-- Delete tournament privilege for recorder -->
+<Route Method="DELETE" Url="/recorder/:recId/tournament/:trnId" Call="WC.Web.JsonAdmin:RemoveTournamentPrivilegeForRecorder"/>
+
+
+<!-- ======================================================================================================================= -->
+<!-- Other                                                                                                             Other -->
+<!-- ======================================================================================================================= -->
+
+<!-- Get system languages -->
+<Route Method="GET" Url="/language" Call="WC.Web.JsonAdmin:GetLanguages"/>
+
+<!-- CheckPrivileges -->
+<Route Method="GET" Url="/checkprivileges" Call="WC.Web.JsonAdmin:CheckPrivileges"/>
+
+<!-- Exit | Kill session -->
+<Route Method="GET" Url="/killsession" Call="WC.Web.JsonAdmin:KillSession"/>
+
 </Routes>
 ]]></Data>
 </XData>
@@ -33,7 +139,6 @@ Dispatch a REST request according to URL and Method</Description>
 	do ##class(%MessageDictionary).SetSessionLanguage(lang)
 	set %session.Language = lang
 	
-	set ^temp("DispatchRequest 1") = $ZTS
 	d %response.SetHeader("Access-Control-Allow-Origin","*")
 	d %response.SetHeader("Access-Control-Allow-Methods","GET, PUT, POST, DELETE, OPTIONS")
 	d %response.SetHeader("Access-Control-Max-Age","10000")
@@ -51,7 +156,6 @@ Dispatch a REST request according to URL and Method</Description>
     #dim tMethodMatched As %Boolean
     
     Try {
-        set ^temp("DispatchRequest 2") = $ZTS
         
         #; Check that the effective user ( could be unknown user ) can access this resource
         Set tAccess=$SYSTEM.Security.Check($Piece($zu(90,21,$namespace),"^",4))
@@ -70,7 +174,6 @@ Dispatch a REST request according to URL and Method</Description>
             Quit
         }
         
-        set ^temp("DispatchRequest 3") = $ZTS
         Set (tResourceMatched,tMethodMatched)=0
         
         #; Walk the dispatch map in collation order of defintion
@@ -124,7 +227,6 @@ Dispatch a REST request according to URL and Method</Description>
             }
         }
         
-        set ^temp("DispatchRequest 4") = $ZTS
         #; Didn't have a match for the resource, report not found
         If tResourceMatched=0 Set tSC=..Http404() Quit
         
@@ -139,7 +241,6 @@ Dispatch a REST request according to URL and Method</Description>
     
     If ..#UseSession=0 Set %session.EndSession=1
     
-    set ^temp("DispatchRequest 5") = $ZTS
     Quit tSC
 ]]></Implementation>
 </Method>
@@ -151,8 +252,6 @@ Called for a REST page in the event of a login being required</Description>
 <FormalSpec>skipheader:%Boolean=1</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	set ^temp("Login") = $ZTS
-	
 	d %response.SetHeader("Access-Control-Allow-Origin","*")
 	d %response.SetHeader("Access-Control-Allow-Methods","GET, PUT, POST, DELETE, OPTIONS")
 	d %response.SetHeader("Access-Control-Max-Age","10000")

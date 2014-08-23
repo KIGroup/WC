@@ -25,10 +25,32 @@
 <Collection>array</Collection>
 </Property>
 
+<Property name="IsInUse">
+<Type>%Boolean</Type>
+<InitialExpression>1</InitialExpression>
+<Required>1</Required>
+</Property>
+
 <Index name="LoginIdx">
 <Properties>Login</Properties>
 <Unique>1</Unique>
 </Index>
+
+<Method name="ConvertToProxyObject">
+<FormalSpec>fullInfo:%Boolean=0</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.id = ..%Id()
+	set proxy.login = ..Login
+	set proxy.name = ..Name
+	set proxy.otherInfo = ..OtherInfo
+	set proxy.isInUse = ..IsInUse
+	set proxy.tournamentsCount = ..AvailableTournaments.Count()
+	
+	quit proxy
+]]></Implementation>
+</Method>
 
 <Method name="Save">
 <ClassMethod>1</ClassMethod>
@@ -44,9 +66,9 @@
 		set rec = ..%New()
 	}
 	
-	set rec.Login = data.login
-	set rec.Name = data.name
-	set rec.OtherInfo = data.otherInfo
+	set rec.Login = $ZCVT(data.login, "I", "UTF8")
+	set rec.Name = $ZCVT(data.name, "I", "UTF8")
+	set rec.OtherInfo = $ZCVT(data.otherInfo, "I", "UTF8")
 	set st = rec.%Save()
 	
 	quit rec
@@ -93,7 +115,7 @@
 <FormalSpec>recorder:Recorder,tournament:Tournament</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	do recorder.AvailableTournaments.SetAt(tournament.%Id())
+	do recorder.AvailableTournaments.RemoveAt(tournament.%Id())
 	quit recorder.%Save()
 ]]></Implementation>
 </Method>
@@ -123,6 +145,9 @@
 </Value>
 <Value name="4">
 <Value>OtherInfo</Value>
+</Value>
+<Value name="5">
+<Value>IsInUse</Value>
 </Value>
 </Data>
 </Storage>

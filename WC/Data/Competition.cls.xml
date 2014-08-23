@@ -96,6 +96,30 @@
 <Properties>Tournament</Properties>
 </Index>
 
+<Method name="ConvertToProxyObject">
+<FormalSpec>fullInfo:%Boolean=0</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.id = ..%Id()
+	set proxy.selfLink = "http://"_##class(Settings).GetWebAppDomain()_##class(Settings).GetWebAppAdmin()_"/competition/"_..%Id()
+	set proxy.tournament = ..Tournament.ConvertToProxyObjectAPI()
+	set proxy.country = ..Country.Name
+	set proxy.location = ..Location
+	set proxy.discipline = ..Discipline.Name
+	set proxy.ageGroup = ..AgeGroup.Name
+	set proxy.division = ..Division.Name
+	set proxy.status = ..CStatus.Name
+	set proxy.type = ..Type.Name
+	set proxy.date = $ZD(..StartDate, 3)
+	set proxy.lastSyncWDSF = ..LastSyncWDSF
+	set proxy.lastModifiedWDSF = ..WDSFLastModified
+	set proxy.isSolo = ..IsSolo
+	
+	quit proxy
+]]></Implementation>
+</Method>
+
 <Method name="Save">
 <ClassMethod>1</ClassMethod>
 <FormalSpec><![CDATA[data:%RegisteredObject,&st:%Status]]></FormalSpec>
