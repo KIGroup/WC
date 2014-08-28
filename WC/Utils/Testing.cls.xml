@@ -76,97 +76,96 @@ do ##class(WC.Utils.Testing).TestRegistration()</Description>
 		
 		set testData = ##class(%ZEN.proxyObject).%New()
 		
-		w !,!, "=== 1. Competition not found"
+		w !,!, "=== 1. Группа не найдена"
 		set testData.competitionId = 100
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 2. Recorder no privileges"
+		w !,!, "=== 2. У регистратора нет привилегий"
 		set testData.competitionId = cmpNoPriv1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 3. Competition bad status"
+		w !,!, "=== 3. У группы ""плохой"" статус"
 		set testData.competitionId = cmpClosed1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 4. Registration normal couple(1) into normal cmp(1)"
+		w !,!, "=== 4. Регистрация существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") в группу "_cmpNorm1
 		set testData.competitionId = cmpNorm1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 5. Registration normal couple(2) into normal cmp(2)"
+		w !,!, "=== 5. Регистрация существующей пары ("_$LIST(prtCplNorm2, 1)_","_$LIST(prtCplNorm2, 2)_") в группу "_cmpNorm2
 		set testData.competitionId = cmpNorm2
 		set testData.manNumber = $LIST(prtCplNorm2, 1)
 		set testData.womanNumber = $LIST(prtCplNorm2, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 6. Again registration normal couple(1) into normal cmp(1)"
+		w !,!, "=== 6. Повторная регистрация существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") в группу "_cmpNorm1
 		set testData.competitionId = cmpNorm1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
 		
-		w !,!, "=== 7. Registration couple with 2 epmty numbers into normal cmp(3)"
+		w !,!, "=== 7. Регистрация пары с двумя пустыми номерами"
 		set testData.competitionId = cmpNorm3
 		set testData.manNumber = ""
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
 		
-		w !,!, "=== 8. Registration couple with 1 epmty numbers into normal cmp(3)"
+		w !,!, "=== 8. Регистрация пары с одним пустым номером в группу для пар (не соло)"
 		set testData.competitionId = cmpNorm3
 		set testData.manNumber = prtSingle1
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
 
-		w !,!, "=== 9. Registration mixed couple(1) into normal cmp(3)"
+		w !,!, "=== 9. Регистрация несуществующей пары (нет такой в WDSF)"
 		set testData.competitionId = cmpNorm3
 		set testData.manNumber = $LIST(prtCplMixed1, 1)
 		set testData.womanNumber = $LIST(prtCplMixed1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
 		
-		w !,!, "=== 10. Registration normal solo(1)-man into solo cmp(1)"
+		w !,!, "=== 10. Регистрация мужчины "_prtSingle1_" в группу для соло "_cmpSingle1
 		set testData.competitionId = cmpSingle1
 		set testData.manNumber = prtSingle1
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
 		
-		w !,!, "=== 11. Registration solo with empty number into solo cmp(1)"
+		w !,!, "=== 11. Регистрация в группу для соло с пустыми номерами"
 		set testData.competitionId = cmpSingle1
 		set testData.manNumber = ""
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 12. Registration solo with wrong number into solo cmp(1)"
+		w !,!, "=== 12. Регистрация в соло группу участника с неверным номером (нет такого в WDSF)"
 		set testData.competitionId = cmpSingle1
 		set testData.manNumber = ""
 		set testData.womanNumber = "7777777"
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 13. Registration normal couple(1) into normal cmpSameDate(1)"
+		w !,!, "=== 13. Регистрация существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") в группу "_cmpNormSameDate1
 		set testData.competitionId = cmpNormSameDate1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		
-		w !,!, "=== 14. Registration normal couple(1) into normal cmpSameDate(2)"
+		w !,!, "=== 14. Регистрация существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") в группу "_cmpNormSameDate2_", ожидается конфликт"
 		set testData.competitionId = cmpNormSameDate2
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Registration(testData)
 		
-		w !,!, "=== 15. Registration normal solo into normal cmpSameDate(3). WRONG Age Group"
+		w !,!, "=== 15. Регистрация участника невозможна, т.к. возрастная группа не та."
 		set testData.competitionId = cmpNormSameDate3
 		set testData.manNumber = ""
 		set testData.womanNumber = $LIST(prtCplNorm5SeniorII, 2)
@@ -218,97 +217,96 @@ do ##class(WC.Utils.Testing).TestDeregistration()</Description>
 		
 		set testData = ##class(%ZEN.proxyObject).%New()
 		
-		w !,!, "=== 1. Competition not found"
+		w !,!, "=== 1. Группа не найдена"
 		set testData.competitionId = 100
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 2. Recorder no privileges"
+		w !,!, "=== 2. Нет привилений у регистратора"
 		set testData.competitionId = cmpNoPriv1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 3. Competition bad status"
+		w !,!, "=== 3. У группы ""плохой"" статус"
 		set testData.competitionId = cmpClosed1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 4. Deregistration normal couple(1) into normal cmp(1)"
+		w !,!, "=== 4. Удаление регистрации существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") из группы "_cmpNorm1
 		set testData.competitionId = cmpNorm1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 5. Deregistration normal couple(2) into normal cmp(2)"
+		w !,!, "=== 5. Удаление регистрации существующей пары ("_$LIST(prtCplNorm2, 1)_","_$LIST(prtCplNorm2, 2)_") из группы "_cmpNorm2
 		set testData.competitionId = cmpNorm2
 		set testData.manNumber = $LIST(prtCplNorm2, 1)
 		set testData.womanNumber = $LIST(prtCplNorm2, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 6. Again deregistration normal couple(1) into normal cmp(1)"
+		w !,!, "=== 6. Повторное удаление регистрации существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") из группы "_cmpNorm1
 		set testData.competitionId = cmpNorm1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
 		
-		w !,!, "=== 7. Deregistration couple with 2 epmty numbers into normal cmp(3)"
+		w !,!, "=== 7. Удаление регистрации пары с пустыми номерами"
 		set testData.competitionId = cmpNorm3
 		set testData.manNumber = ""
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
 		
-		w !,!, "=== 8. Deregistration couple with 1 epmty numbers into normal cmp(3)"
+		w !,!, "=== 8. Удаление регистрации пары с одним пустым номером из группы для пар(не соло)"
 		set testData.competitionId = cmpNorm3
 		set testData.manNumber = prtSingle1
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
 
-		w !,!, "=== 9. Deregistration mixed couple(1) into normal cmp(3)"
+		w !,!, "=== 9. Удаление регистрации неизвестной пары для WDSF из группы"
 		set testData.competitionId = cmpNorm3
 		set testData.manNumber = $LIST(prtCplMixed1, 1)
 		set testData.womanNumber = $LIST(prtCplMixed1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
 		
-		w !,!, "=== 10. Deregistration normal solo(1)-man into solo cmp(1)"
+		w !,!, "=== 10. Удаление регистрации соло участника "_prtSingle1_" из группы "_cmpSingle1
 		set testData.competitionId = cmpSingle1
 		set testData.manNumber = prtSingle1
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
 		
-		w !,!, "=== 11. Deregistration solo with empty number into solo cmp(1)"
+		w !,!, "=== 11. Удаление регистрации соло участника с пустым номером"
 		set testData.competitionId = cmpSingle1
 		set testData.manNumber = ""
 		set testData.womanNumber = ""
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 12. Deregistration solo with wrong number into solo cmp(1)"
+		w !,!, "=== 12. Удаление регистрации соло участника с неизвестным WDSF номером"
 		set testData.competitionId = cmpSingle1
 		set testData.manNumber = ""
 		set testData.womanNumber = "7777777"
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 13. Deregistration normal couple(1) into normal cmpSameDate(1)"
+		w !,!, "=== 13. Удаление регистрации существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") из группы "_cmpNormSameDate1
 		set testData.competitionId = cmpNormSameDate1
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		
-		w !,!, "=== 14. Deregistration normal couple(1) into normal cmpSameDate(2)"
+		w !,!, "=== 14. Удаление регистрации существующей пары ("_$LIST(prtCplNorm1, 1)_","_$LIST(prtCplNorm1, 2)_") из группы "_cmpNormSameDate2_". Этой регистрации нет."
 		set testData.competitionId = cmpNormSameDate2
 		set testData.manNumber = $LIST(prtCplNorm1, 1)
 		set testData.womanNumber = $LIST(prtCplNorm1, 2)
 		w !, ##class(WC.Web.JsonAdmin).Deregistration(testData)
 		
-		w !,!, "=== 15. Deregistration normal solo into normal cmpSameDate(3). WRONG Age Group"
+		w !,!, "=== 15. Удаление регистрации соло участницы. А регистрации нет."
 		set testData.competitionId = cmpNormSameDate3
 		set testData.manNumber = ""
 		set testData.womanNumber = $LIST(prtCplNorm5SeniorII, 2)
@@ -477,6 +475,36 @@ do ##class(WC.Utils.Testing).TestRecorder()</Description>
 	}
 	
 	quit st
+]]></Implementation>
+</Method>
+
+<Method name="TestServerConnection">
+<Description>
+do ##class(WC.Utils.Testing).TestServerConnection("/competition")</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>pUrl:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	try{
+		set req = ##class(%Net.HttpRequest).%New()
+	  	set req.Server = "146.185.160.138"
+	  	set req.Port = 57772
+	  	set req.Authorization = "Basic "_$system.Encryption.Base64Encode($g(^TestServer("WDSF", "Login"))_":"_$g(^TestServer("WDSF", "Password")))
+	  	set pUrl = "/wdsfcontroller/api"_pUrl
+		 	
+	  	set st = req.Send("GET", pUrl)
+	 	set json = req.HttpResponse.Data.Read()
+	 	
+	  	set ^json("wc") = json
+	  	$$$TOE(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(json,,.pResponse))
+	  	
+	  	do pResponse.%ToJSON()
+	}
+	catch(ex){
+		do $SYSTEM.OBJ.DisplayError(ex.AsStatus())
+	}
+	
+  	q $$$OK
 ]]></Implementation>
 </Method>
 </Class>

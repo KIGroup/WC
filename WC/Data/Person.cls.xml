@@ -159,6 +159,42 @@
 ]]></Implementation>
 </Method>
 
+<Method name="GetConflictCompetitions">
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[personId:%String,cmpId:%String,&st]]></FormalSpec>
+<ReturnType>%ListOfObjects</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	set cmpList = ##class(%ListOfObjects).%New()
+	
+	set cmp = ##class(Competition).%OpenId(cmpId,,.st)
+	set cmpTournamentId = cmp.Tournament.%Id()
+	
+	&sql(DECLARE CrsCmpConflict CURSOR FOR
+			SELECT ID INTO :cmpConflictId
+		 	FROM WC_Data.Competition
+		 	WHERE CStatus->Name <> 'Closed' 
+		 	   AND CStatus->Name <> 'Cancelled'
+		 	   AND Tournament <> :cmpTournamentId 
+		 	   AND StartDate = :cmp.StartDate
+		 	   AND ID IN (SELECT prtCouple.Competition FROM WC_Data.ParticipantCouple as prtCouple WHERE prtCouple.Couple->Man = :personId OR prtCouple.Couple->Woman = :personId
+		 	   			  UNION
+		 	   			  SELECT prtSingle.Competition FROM WC_Data.ParticipantSingle as prtSingle WHERE prtSingle.Athlete = :personId))
+		
+	&sql(OPEN CrsCmpConflict)
+	for{
+		&sql(FETCH CrsCmpConflict INTO :cmpConflictId) 
+		quit:(SQLCODE '= 0)
+		
+		do cmpList.Insert(##class(Competition).%OpenId(cmpConflictId).ConvertToProxyObject())
+	}
+		
+	&sql(CLOSE CrsCmpConflict)
+	
+	quit cmpList
+]]></Implementation>
+</Method>
+
 <UDLText name="T">
 <Content><![CDATA[
 /*

@@ -103,7 +103,7 @@
 	set proxy = ##class(%ZEN.proxyObject).%New()
 	set proxy.id = ..%Id()
 	set proxy.selfLink = "http://"_##class(Settings).GetWebAppDomain()_##class(Settings).GetWebAppAdmin()_"/competition/"_..%Id()
-	set proxy.tournament = ..Tournament.ConvertToProxyObjectAPI()
+	set proxy.tournament = ..Tournament.ConvertToProxyObject()
 	set proxy.country = ..Country.Name
 	set proxy.location = ..Location
 	set proxy.discipline = ..Discipline.Name

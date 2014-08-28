@@ -18,20 +18,21 @@ do ##class(WC.Wdsf.API).Call("GET", "/competition/46164?format=json", .resp)</De
  	try 
  	{
   		set req = ##class(%Net.HttpRequest).%New()
-  		set req.SSLConfiguration = $g(^Settings("Dance","Wdsf", "SslConfig"))
+  		set req.SSLConfiguration = $g(^Settings("WC","Wdsf", "SslConfig"))
   		set req.Server = "services.worlddancesport.org"
   		set req.Https = 1
   		set req.Port = 443
   		set req.ProxyHTTPS = 1
-  		set req.ProxyServer = $g(^Settings("Dance","Wdsf", "ProxyServer"))
-  		set req.ProxyPort = $g(^Settings("Dance","Wdsf", "ProxyPort"))
-  		set req.ProxyTunnel = $g(^Settings("Dance","Wdsf", "ProxyTunnel"))
+  		set req.ProxyServer = $g(^Settings("WC","Wdsf", "ProxyServer"))
+  		set req.ProxyPort = $g(^Settings("WC","Wdsf", "ProxyPort"))
+  		set req.ProxyTunnel = $g(^Settings("WC","Wdsf", "ProxyTunnel"))
   		
-  		set req.Authorization = "Basic "_$system.Encryption.Base64Encode($g(^Settings("Dance","Wdsf", "Login"))_":"_$g(^Settings("Dance","Wdsf", "Password")))
+  		set req.Authorization = "Basic "_$system.Encryption.Base64Encode($g(^Settings("WC","Wdsf", "Login"))_":"_$g(^Settings("WC","Wdsf", "Password")))
   		set pUrl = "/api/1"_pUrl
 	 	
   		$$$TOE(sc, req.Send($zconvert(pMethod,"u"), pUrl))
- 		set json = req.HttpResponse.Data.Read()
+ 		set json = req.HttpResponse.Data.Read(10000000, .sc)
+ 		
   		set ^json("wc") = json
   		$$$TOE(sc, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(json,,.pResponse))
  	}
@@ -112,7 +113,7 @@ Get person by id (MIN)</Description>
 <FormalSpec><![CDATA[id:%String,&sc:%Status=$$$OK]]></FormalSpec>
 <ReturnType>%ZEN.proxyObject</ReturnType>
 <Implementation><![CDATA[
-	set url = "/person/"_id_"?format=json"
+	set url = "/person/"_+id_"?format=json"
 	
 	quit ..Call("GET", url, .sc)
 ]]></Implementation>
@@ -132,7 +133,7 @@ division [string] : General/Professional</Description>
 	set url = "/couple?format=json"
 	
 	if (name '= "") set url = url_"&name="_name
-	if (min '= "") set url = url_"&min="_min
+	if (min '= "") set url = url_"&min="_+min
 	if (ageGroup '= "") set url = url_"&ageGroup="_ageGroup
 	if (division '= "") set url = url_"&division="_division
 	

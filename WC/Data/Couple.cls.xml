@@ -62,7 +62,7 @@
 	set proxy.division = ..Division.Name
 	set proxy.ageGroup = ..AgeGroup.Name
 	set proxy.status = ..CStatus.Name
-	set proxy.LastSyncWDSF = ..LastSyncWDSF
+	set proxy.lastSyncWDSF = ..LastSyncWDSF
 	
 	quit proxy
 ]]></Implementation>
@@ -98,7 +98,7 @@
 <Method name="SyncWDSF">
 <ClassMethod>1</ClassMethod>
 <FormalSpec><![CDATA[wdsfId:%String,syncTimeOutMinutes:%Integer=60,&st]]></FormalSpec>
-<ReturnType>Person</ReturnType>
+<ReturnType>Couple</ReturnType>
 <Implementation><![CDATA[
 	set st = $$$OK
 	set currTS = $ZDT($ZTS, 3)

@@ -3,6 +3,18 @@
 <Class name="WC.Data.Settings">
 <TimeCreated>63418,74531.275718</TimeCreated>
 
+<Method name="CurrentUserIsAdmin">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	SET SQLCODE=""
+	&sql(%CHECKPRIV DELETE ON WC_Data.Recorder)
+	if (SQLCODE = 100) quit ##class(WC.Utils.Msg).GetErrorStatus("NoPrivilege", " USERNAME="_$USERNAME)
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
 <Method name="Init">
 <Description>
 do ##class(WC.Data.Settings).Init()</Description>

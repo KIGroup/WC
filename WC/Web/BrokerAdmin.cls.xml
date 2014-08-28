@@ -135,16 +135,20 @@ Dispatch a REST request according to URL and Method</Description>
 <FormalSpec>pUrl:%String,pMethod:%String</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	set lang = $CASE(%request.CgiEnvs("HTTP_ACCEPT_LANGUAGE"), "ru" : "ru", :"en")
+	set ^temp("WC", "DispatchRequest") = $ZTS
+	// ru-Ru, en-En, ru, en
+	set lang = $CASE($EXTRACT($GET(%request.CgiEnvs("HTTP_ACCEPT_LANGUAGE"), "en"), 0, 2), 
+					"ru" : "ru", 
+						 : "en")
 	do ##class(%MessageDictionary).SetSessionLanguage(lang)
 	set %session.Language = lang
-	
+
 	d %response.SetHeader("Access-Control-Allow-Origin","*")
 	d %response.SetHeader("Access-Control-Allow-Methods","GET, PUT, POST, DELETE, OPTIONS")
 	d %response.SetHeader("Access-Control-Max-Age","10000")
-	d %response.SetHeader("Access-Control-Allow-Headers","Content-Type, Authorization") 
+	d %response.SetHeader("Access-Control-Allow-Headers","Content-Type, Authorization, Accept-Language") 
 	
-
+	
     #dim tSC As %Status = $$$OK
     #dim e As %Exception.AbstractException
     
@@ -241,6 +245,8 @@ Dispatch a REST request according to URL and Method</Description>
     
     If ..#UseSession=0 Set %session.EndSession=1
     
+    set ^temp("WC", "DispatchRequest end") = $SYSTEM.Status.GetErrorText(tSC)
+    
     Quit tSC
 ]]></Implementation>
 </Method>
@@ -252,11 +258,13 @@ Called for a REST page in the event of a login being required</Description>
 <FormalSpec>skipheader:%Boolean=1</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
+	set ^temp("WC", "Login") = $ZTS
+	
 	d %response.SetHeader("Access-Control-Allow-Origin","*")
 	d %response.SetHeader("Access-Control-Allow-Methods","GET, PUT, POST, DELETE, OPTIONS")
 	d %response.SetHeader("Access-Control-Max-Age","10000")
-	d %response.SetHeader("Access-Control-Allow-Headers","Content-Type, Authorization")
-
+	d %response.SetHeader("Access-Control-Allow-Headers","Content-Type, Authorization, Accept-Language")
+	
 	if (%request.GetCgiEnv("REQUEST_METHOD") = "OPTIONS"){
 		Do %response.WriteHTTPHeader()
 		q $$$OK

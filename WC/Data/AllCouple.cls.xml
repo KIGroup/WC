@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Data.AllCouple">
+<Super>%Persistent</Super>
+<TimeCreated>63427,78814.715381</TimeCreated>
+
+<Property name="wdsfId">
+<Type>%String</Type>
+<Required>1</Required>
+</Property>
+
+<Property name="name">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Property name="age">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Property name="division">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Property name="country">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Property name="status">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Property name="man">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Property name="woman">
+<Type>%String</Type>
+<Parameter name="MAXLEN" value="3000"/>
+</Property>
+
+<Index name="wdsfIdIdx">
+<Properties>wdsfId</Properties>
+<Unique>1</Unique>
+</Index>
+
+<Method name="Save">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>data:%RegisteredObject</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	if (..wdsfIdIdxExists(data.id) = $$$YES){
+		set cp = ..wdsfIdIdxOpen(data.id)
+	}
+	else{
+		set cp = ..%New()
+	}
+	
+	set cp.wdsfId = data.id
+	set cp.name = data.name
+	set cp.age = data.age
+	set cp.division = data.division
+	set cp.status = data.status
+	set cp.country = data.country
+	set cp.man = data.man
+	set cp.woman = data.woman
+	quit cp.%Save()
+]]></Implementation>
+</Method>
+
+<Method name="LoadAll">
+<Description>
+do ##class(WC.Data.AllCouple).LoadAll()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	do ..LoadByAge("YOUTH")	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="LoadByAge">
+<Description>
+do ##class(WC.Data.AllCouple).LoadByAge(age)</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>age:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	w !,"Age = "_age
+	
+	try{
+		set couples = ##class(WC.Wdsf.API).GetCouples(,,age,,.st)
+		w !,"Couples count = "_couples.Count()
+		
+		for i=1:1:10{
+			set st = ..Save(##class(WC.Wdsf.API).GetCouple(couples.GetAt(i).id, .st))
+			if $$$ISERR(st){
+				w !,"id="_couples.GetAt(i).id
+				do $system.OBJ.DisplayError(ex.AsStatus())
+			}
+		} 
+	}
+	catch(ex){
+		do $system.OBJ.DisplayError(ex.AsStatus())
+	}
+	
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<UDLText name="T">
+<Content><![CDATA[
+/*
+<couple xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://services.worlddancesport.org/api">
+<link xlink:href="https://services.worlddancesport.org/api/1/couple/rls-1802" rel="self"/>
+<link xlink:href="https://services.worlddancesport.org/api/1/participant?coupleId=rls-1802" rel="http://services.worlddancesport.org/rel/couple/participations" type="application/vnd.worlddancesport.participants+xml"/>
+<link xlink:href="https://services.worlddancesport.org/api/1/person/10003603" rel="http://services.worlddancesport.org/rel/couple/man" type="application/vnd.worlddancesport.person+xml"/>
+<link xlink:href="https://services.worlddancesport.org/api/1/person/10003604" rel="http://services.worlddancesport.org/rel/couple/woman" type="application/vnd.worlddancesport.person+xml"/>
+<id>rls-1802</id>
+<name>Michael Lindner - Beate Lindner</name>
+<country>Germany</country>
+<age>SENIOR III</age>
+<division>General</division>
+<status>Active</status>
+<man>10003603</man>
+<woman>10003604</woman>
+</couple>
+*/
+]]></Content>
+</UDLText>
+
+<Storage name="Default">
+<Type>%Library.CacheStorage</Type>
+<DataLocation>^WC.Data.AllCoupleD</DataLocation>
+<DefaultData>AllCoupleDefaultData</DefaultData>
+<IdLocation>^WC.Data.AllCoupleD</IdLocation>
+<IndexLocation>^WC.Data.AllCoupleI</IndexLocation>
+<StreamLocation>^WC.Data.AllCoupleS</StreamLocation>
+<ExtentSize>100000</ExtentSize>
+<Data name="AllCoupleDefaultData">
+<Value name="1">
+<Value>%%CLASSNAME</Value>
+</Value>
+<Value name="2">
+<Value>wdsfId</Value>
+</Value>
+<Value name="3">
+<Value>name</Value>
+</Value>
+<Value name="4">
+<Value>age</Value>
+</Value>
+<Value name="5">
+<Value>division</Value>
+</Value>
+<Value name="6">
+<Value>country</Value>
+</Value>
+<Value name="7">
+<Value>status</Value>
+</Value>
+<Value name="8">
+<Value>man</Value>
+</Value>
+<Value name="9">
+<Value>woman</Value>
+</Value>
+</Data>
+</Storage>
+</Class>
+</Export>

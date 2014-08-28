@@ -81,23 +81,27 @@ do ##class(WC.Utils.Msg).Init()</Description>
 	
 	set ^CacheMsg("WC", "ru", "Success") = "Успех"
 	set ^CacheMsg("WC", "en", "Success") = "Success"
-	
+
 	do ..InitResponseMsg("success_Registration_Completed", 1010, "Регистрация завершена.", "Registration is completed.")
-	do ..InitResponseMsg("success_Registration_Exists", 1011, "Регистрация уже выполнена.", "Registration has already been done.")
+	do ..InitResponseMsg("success_Registration_Exists"   , 1011, "Регистрация уже выполнена.", "Registration has already been done.")
+	do ..InitResponseMsg("success_Registration_NotExists", 1012, "Регистрации нет.", "Registration not exists.")
+	do ..InitResponseMsg("success_Registration_Removed"  , 1013, "Регистрация удалена.", "Registration has been removed.")
 	
-	do ..InitResponseMsg("error_Recorder_NotFound",2010, "Регистратор не найден.", "Recorder not found.")
+	do ..InitResponseMsg("error_Recorder_NotFound"    , 2010, "Регистратор не найден.", "Recorder not found.")
 	do ..InitResponseMsg("error_Recorder_NoPrivileges", 2011, "У регистратора нет привилегий на запись в турнир.", "Recorder has no privileges to write to the tournament.")
 	
-	do ..InitResponseMsg("error_Competition_NotFound", 2020, "Группа не найдена.", "Competition not found.")
-	do ..InitResponseMsg("error_Competition_UnusableStatus", 2021, "Статус группы не позволяет выполнить регистрацию.", "Competition status does not allow registration.")
+	do ..InitResponseMsg("error_Competition_NotFound"                    , 2020, "Группа не найдена.", "Competition not found.")
+	do ..InitResponseMsg("error_Competition_UnusableStatus"              , 2021, "Статус группы не позволяет выполнить регистрацию.", "Competition status does not allow registration.")
 	do ..InitResponseMsg("error_Competition_Solo_OnlyOneNumberIsRequired", 2022, "Группа для 'соло' участников. Введите один номер.", "Competiiton for 'solo' participants. Only one athlete number is required.")
 	do ..InitResponseMsg("error_Competition_Conflict_SameDayRegistration", 2023, "Регистрация участника в данную группу невозможна. Спортсмен уже принимает участие в группе другого турнира в день.", "Registration of participants in this group is not possible. Athlete is already taking part in the tournament in the group another day.")
 	
-	do ..InitResponseMsg("error_Athlete_EmptyNumber", 2030, "Пустой номер спортсмена.", "Empty athlete number.")
+	do ..InitResponseMsg("error_Athlete_EmptyNumber"                      , 2030, "Пустой номер спортсмена.", "Empty athlete number.")
+	do ..InitResponseMsg("error_Athlete_AgeGroup_NotAllowedForCompetition", 2031, "Спортсмен не допускается к регистрации из-за своего возраста.", "Athlete is not allowed to register because of his age.")
 	
-	do ..InitResponseMsg("error_Couple_NotFoundInWDSF", 2040, "Пара не найдена в базе данных WDSF.", "Couple not found in WDSF database.")
+	
+	do ..InitResponseMsg("error_Couple_NotFoundInWDSF"   , 2040, "Пара не найдена в базе данных WDSF.", "Couple not found in WDSF database.")
 	do ..InitResponseMsg("error_Couple_NotFoundByNumbers", 2041, "Пара не найдена по номерам спортсменов.", "Couple not found by numbers.")
-	do ..InitResponseMsg("error_Couple_SyncFailed", 2042, "Синхронизация данных пары с WDSF завершилась ошибкой.", "Synchronization couple with WDSF failed.")
+	do ..InitResponseMsg("error_Couple_SyncFailed"       , 2042, "Синхронизация данных пары с WDSF завершилась ошибкой.", "Synchronization couple with WDSF failed.")
 	
 	do ..InitResponseMsg("error_Person_SyncFailed", 2050, "Синхронизация данных спортсмена с WDSF завершилась ошибкой.", "Synchronization athlete with WDSF failed.")
 

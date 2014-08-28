@@ -18,10 +18,9 @@ Method="POST" Url="/registration"</Description>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	try{
-		set %response = ##class(%ZEN.proxyObject).%New()	
-		if '$ISOBJECT(data){
-			$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
-		}
+		if '$DATA(%response) set %response = ##class(%ZEN.proxyObject).%New()
+		if '$ISOBJECT(data) $$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
+
 	
 		set response = ##class(%ZEN.proxyObject).%New()
 	
@@ -64,25 +63,24 @@ Method="POST" Url="/registration"</Description>
 		}
 		
 		// Find conflict competition(tournament) by day
-		set cmpConflictMan = ##class(WC.Data.Person).GetConflictCompetition(data.manNumber, data.competitionId, .cfSt1)
-		set cmpConflictWoman = ##class(WC.Data.Person).GetConflictCompetition(data.womanNumber, data.competitionId, .cfSt2)
+		set cmpListConflictMan = ##class(WC.Data.Person).GetConflictCompetitions(data.manNumber, data.competitionId, .cfSt1)
 							 						   		
-		if $ISOBJECT(cmpConflictMan) || $ISOBJECT(cmpConflictWoman){
+		if (cmpListConflictMan.Count() > 0){
 			set otherInfo = ##class(%ZEN.proxyObject).%New()
-			set otherInfo.conflict = ##class(%ZEN.proxyObject).%New()
-			if $ISOBJECT(cmpConflictMan){
-				set otherInfo.conflict.competitionId = cmpConflictMan.%Id()
-				set otherInfo.conflict.day = $ZD(cmpConflictMan.StartDate, 3)
-				set otherInfo.manNumber = data.manNumber
-			}
-			elseif $ISOBJECT(cmpConflictWoman){
-				set otherInfo.conflict.competitionId = cmpConflictWoman.%Id()
-				set otherInfo.conflict.day = $ZD(cmpConflictWoman.StartDate, 3)
-				set otherInfo.womanNumber = data.womanNumber
-			}
-			
+			set otherInfo.conflictCompetitions = cmpListConflictMan
+			set otherInfo.manNumber = data.manNumber
 			set %response.Status = "400"
 			return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Conflict_SameDayRegistration", otherInfo).%ToJSON()
+		}
+		else{
+			set cmpListConflictWoman = ##class(WC.Data.Person).GetConflictCompetitions(data.womanNumber, data.competitionId, .cfSt2)
+			if (cmpListConflictWoman.Count() > 0){
+				set otherInfo = ##class(%ZEN.proxyObject).%New()
+				set otherInfo.conflictCompetitions = cmpListConflictWoman
+				set otherInfo.womanNumber = data.womanNumber
+				set %response.Status = "400"
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Competition_Conflict_SameDayRegistration", otherInfo).%ToJSON()
+			}
 		}
 		
 		// Check competition type (Solo|Couple)
@@ -159,9 +157,8 @@ Method="POST" Url="/deregistration"</Description>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	try{
-		if '$ISOBJECT(data){
-			$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
-		}
+		if '$DATA(%response) set %response = ##class(%ZEN.proxyObject).%New()
+		if '$ISOBJECT(data) $$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
 	
 		set response = ##class(%ZEN.proxyObject).%New()
 	
@@ -443,6 +440,7 @@ Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014
 		set status = $GET(%request.Data("status", 1))
 		set from = $REPLACE($GET(%request.Data("from", 1)), "/", "-")
 		set to = $REPLACE($GET(%request.Data("to", 1)), "/", "-")
+		set modifiedsince = $REPLACE($GET(%request.Data("modifiedsince", 1)), "/", "-")
 		
 		set dateMatcher = ##class(%Regex.Matcher).%New("^[0-9]{4}-(0?[1-9]|1[0-2])-(0?[1-9]|[1-2][0-9]|3[0-1])")
 		
@@ -464,6 +462,23 @@ Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014
 			set where = where_"StartDate <= "_$ZDH(to, 3)_" AND "
 		}
 		
+		if (modifiedsince '= ""){
+			set modifiedsince = $REPLACE(modifiedsince, "T", " ")
+			set modifiedDate = $P(modifiedsince, " ", 1)
+			set modifiedTime = $P(modifiedsince, " ", 2) 
+			if (dateMatcher.Match(modifiedDate) = $$$NO){
+				set %response.Status = "400"	
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Date_NotValid").%ToJSON()
+			}
+			
+			if (modifiedTime '= "") && $$$ISERR(##class(%Library.TimeStamp).IsValid(modifiedsince)){
+				set %response.Status = "400"	
+				return ##class(WC.Utils.Msg).GetResponseObject("error_TimeStamp_NotValid").%ToJSON()
+			}
+			
+			set where = where_"WDSFLastModified >= '"_modifiedsince_"' AND "
+		}
+		
 		if (status '= ""){
 			set where = where_"CStatus->Name = '"_..ParseParameter(status)_"' AND "
 		}
@@ -480,12 +495,12 @@ Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014
 		set sql = "SELECT TOP 200 ID "_
 				  "FROM WC_Data.Competition "_
 				  where_
-				  "ORDER BY StartDate"
+				  "ORDER BY StartDate, WDSFLastModified"
 		
 		set statement = ##class(%SQL.Statement).%New()	
 		$$$THROWONERROR(st, statement.%Prepare(sql))		
 		set rs = statement.%Execute()
-
+		set ^temp = sql
 		set proxy = ##class(%ZEN.proxyObject).%New()
 		set proxy.competitions = ##class(%ListOfObjects).%New()
 		while (rs.%Next() '= 0){
@@ -660,13 +675,68 @@ Method="GET" Url="/couple/:id"</Description>
 	set st = $$$OK
 	
 	try{
-		set pr = ##class(WC.Data.Couple).%OpenId(id,,.st)
-		if $$$ISERR(st) {
-			set %response.Status = "400"	
-			return ##class(WC.Utils.Msg).GetResponseObject("error_Couple_NotFound").%ToJSON()
+		set couple = ##class(WC.Data.Couple).SyncWDSF(id, 10000, .st)
+		if $$$ISERR(st)	{
+			set %response.Status = "400"
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.coupleId = wdsfCoupleId
+			set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Couple_SyncFailed", otherInfo).%ToJSON()
 		}
 		
-		do pr.ConvertToProxyObject().%ToJSON()
+		do couple.ConvertToProxyObject().%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetCoupleByNumbers">
+<Description><![CDATA[
+Get one couple by Id
+Method="GET" Url="/couple?manNumber=1111&womanNumber=22222"]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>manNumber:%String,womanNumber:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set wdsfCoupleId = $$$NULLOREF
+		
+		set coupleOld = ##class(WC.Data.Couple).GetByNumbers(manNumber, womanNumber, .st)
+	
+		// Get Id of existed couple from DB or find couple Id in WDSF DB by athlete's numbers
+		if $$$ISOK(st){
+			set wdsfCoupleId = coupleOld.%Id()
+		}
+		else{
+			set wdsfCoupleId = ##class(WC.Data.Couple).GetIdFromWDSF(manNumber, womanNumber, .st)
+			if $$$ISERR(st)	{
+				set %response.Status = "400"	
+				set otherInfo = ##class(%ZEN.proxyObject).%New()
+				set otherInfo.IsSolo = $$$NO
+				set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+				return ##class(WC.Utils.Msg).GetResponseObject("error_Couple_NotFoundInWDSF", otherInfo).%ToJSON()
+			}
+		}
+		
+		kill coupleOld
+	
+		// Synchronize couple from WDSF DB (or not) 
+		set couple = ##class(WC.Data.Couple).SyncWDSF(wdsfCoupleId, 10000, .st)
+		if $$$ISERR(st)	{
+			set %response.Status = "400"
+			set otherInfo = ##class(%ZEN.proxyObject).%New()
+			set otherInfo.coupleId = wdsfCoupleId
+			set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Couple_SyncFailed", otherInfo).%ToJSON()
+		}
+		
+		do couple.ConvertToProxyObject().%ToJSON()
 	}
 	catch(ex){
 		set st = ex.AsStatus()
@@ -686,6 +756,12 @@ Method="GET" Url="/couple". Filter example params: ?min=1000232"</Description>
 	set st = $$$OK
 	
 	try{
+		set manNumber = ..ParseParameter($GET(%request.Data("manNumber", 1)))
+		set womanNumber = ..ParseParameter($GET(%request.Data("womanNumber", 1)))
+		if (manNumber '=  "") && (womanNumber '=  ""){
+			return ..GetCoupleByNumbers(manNumber, womanNumber)
+		}
+		
 		set min = ..ParseParameter($GET(%request.Data("min", 1)))
 		
 		set where = ""
@@ -741,10 +817,11 @@ Method="GET" Url="/person/:id"</Description>
 	set st = $$$OK
 	
 	try{
-		set pr = ##class(WC.Data.Person).%OpenId(id,,.st)
+		set pr = ##class(WC.Data.Person).SyncWDSF(id, 10000, .st)
 		if $$$ISERR(st) {
-			set %response.Status = "400"	
-			return ##class(WC.Utils.Msg).GetResponseObject("error_Person_NotFound").%ToJSON()
+			set %response.Status = "400"
+			set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
+			return ##class(WC.Utils.Msg).GetResponseObject("error_Person_SyncFailed", otherInfo).%ToJSON()
 		}
 		
 		do pr.ConvertToProxyObject().%ToJSON()
@@ -822,6 +899,7 @@ Method="POST" Url="/recorder"</Description>
 	set st = $$$OK
 	
 	try{
+		$$$THROWONERROR(st, ##class(WC.Data.Settings).CurrentUserIsAdmin())
 		$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
       	
       	do ##class(WC.Data.Recorder).Save(data, .st)
@@ -846,7 +924,7 @@ Method="GET" Url="/recorder/:id"</Description>
 <FormalSpec>id:%String</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	
+	$$$THROWONERROR(st, ##class(WC.Data.Settings).CurrentUserIsAdmin())
 	quit ..GetProxyObject("WC.Data.Recorder", id).%ToJSON()
 ]]></Implementation>
 </Method>
@@ -889,6 +967,8 @@ Method="GET" Url="/grid/recorder". Filter example params: ?first=1&last=10&sqlNa
 	set st = $$$OK
 	
 	try{
+		$$$THROWONERROR(st, ##class(WC.Data.Settings).CurrentUserIsAdmin())
+		
 		set params = ##class(%ZEN.proxyObject).%New()
 		set params.first = $GET(%request.Data("first", 1), 1)
 		set params.last = $GET(%request.Data("last", 1), 10)
@@ -918,6 +998,8 @@ Method="POST" Url="/recorder/:recId/tournament/:trnId"</Description>
 	set st = $$$OK
 	
 	try{
+		$$$THROWONERROR(st, ##class(WC.Data.Settings).CurrentUserIsAdmin())
+		
 		set st = ##class(WC.Data.Recorder).AddAvailableTournament(##class(WC.Data.Recorder).%OpenId(recId), ##class(WC.Data.Tournament).%OpenId(trnId))
 		if $$$ISERR(st){ 
       		$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus("error_Recorder_AddTournament", "| "_st))
@@ -942,6 +1024,8 @@ Method="DELETE" Url="/recorder/:recId/tournament/:trnId"</Description>
 	set st = $$$OK
 	
 	try{
+		$$$THROWONERROR(st, ##class(WC.Data.Settings).CurrentUserIsAdmin())
+		
 		set st = ##class(WC.Data.Recorder).RemoveAvailableTournament(##class(WC.Data.Recorder).%OpenId(recId), ##class(WC.Data.Tournament).%OpenId(trnId))
 		if $$$ISERR(st){ 
       		$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus("error_Recorder_RemoveTournament", "| "_st))
@@ -1015,9 +1099,9 @@ Method="GET" Url="/checkprivileges"</Description>
 	set proxy.userName = $Username
 	set proxy.isAdmin = 0
 	
-	//if (##class(WC.Data.Equipment).CheckUpdatePrivilege() = $$$OK){
+	if (##class(WC.Data.Settings).CurrentUserIsAdmin() = $$$OK){
 		set proxy.isAdmin = 1
-	//}
+	}
 	
 	do proxy.%ToJSON()
 	
