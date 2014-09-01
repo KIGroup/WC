@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/app.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//dddddddddddd
+
+var servicesModule     = angular.module('servicesModule', ['ngRoute','ngCookies','ui.bootstrap']);
+var controllersModule  = angular.module('controllersModule', ['servicesModule']);
+var directivesModule   = angular.module('directivesModule', []);
+var localizationModule = angular.module('localizationModule', []);
+var filterModule       = angular.module('filterModule', []);
+var mainModule         = angular.module('mainModule', ['localizationModule', 'filterModule', 'servicesModule', 'controllersModule', 'directivesModule']);
+
+mainModule.config(['$routeProvider', function($routeProvider) {
+	// All tournaments
+	$routeProvider.when('/tournaments', {templateUrl: 'partials/tournaments.csp', controller: 'TournamentsCtrl'});
+	$routeProvider.when('/recorders', {templateUrl: 'partials/recorders.csp', controller: 'RecordersCtrl'});
+	$routeProvider.when('/recorder/:id', {templateUrl: 'partials/recorder.csp', controller: 'RecorderCtrl'});
+	$routeProvider.when('/recorder', {templateUrl: 'partials/recorder.csp', controller: 'RecorderCtrl'});
+	
+    $routeProvider.otherwise({redirectTo: '/recorders'});
+}]);]]></CSP>
+</Export>

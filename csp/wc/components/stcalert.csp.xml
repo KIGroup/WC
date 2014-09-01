@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/components/stcalert.csp" application="/csp/wdsfcontroller/"><![CDATA[
+<div ng-class="data.cssClass" ng-show="data.visible">
+     <button class="close" type="button" ng-click="close()">&times;</button>
+     <strong ng-bind="data.title"></strong>&nbsp;<span ng-bind="data.msg"></span>
+</div>
+    ]]></CSP>
+</Export>

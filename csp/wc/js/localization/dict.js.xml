@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/localization/dict.js" application="/csp/wdsfcontroller/"><![CDATA[
+//---
+
+localizationModule.constant('DanceDictionary', {
+  toEnglish: {
+  },
+  toRussian: {
+	'MMMM d, y':'d MMMM y',
+	'Administrator':'Администратор',
+	'Recorder':'Регистратор',
+	'End session' : 'Завершить сеанс',
+	'Tournaments' : 'Турниры',
+	'Recorders' : 'Регистраторы',
+	'System language' : 'Язык системы',
+	'WDSF Controller' : 'WDSF Controller',
+	'Select item to display detailed information.' : 'Выберите элемент для отображения подробной информации.',
+	'Add tournament for selected recorder' : '',
+	'Year' : 'Год',
+	'Tournament' : 'Турнир',
+	'Add' : 'Добавить',
+	'Cancel' : 'Отмена',
+	'First page' : 'Первая страница',
+	'Previous page' : 'Предыдущая страница',
+	'Next page' : 'Следующая страница',
+	'Last page' : 'Последняя страница',
+	'Search on column' : 'Поиск в столбце',
+	'Mode' : 'Режим',
+	'Remove' : 'Удалить',
+	'Page' : 'Страница',
+	'of' : 'из',
+	'Page size' : 'Размер страницы',
+	'Login' : 'Логин',
+	'Full name' : 'Полное имя',
+	'Other information' : 'Другая информация',
+	'Available tournaments' : 'Доступные турниры',
+	'Country' : 'Страна',
+	'Dates' : 'Даты',
+	'Disciplines' : 'Дисциплины',
+	'Types' : 'Типы',
+	'Age groups' : 'Возрастные категории',
+	'Competitions' : 'Группы',
+	'Editing recorder' : 'Редактирование регистратора',
+	'Name' : 'Имя',
+	'Save' : 'Сохранить',
+	'Back' : 'Назад',
+	'Adding recorder' : 'Добавление регистратора'
+
+  },
+  getTranslate: function(word, toLanguage){
+	var def = function(key){
+		console.log("'" + key + "' : '',");
+		
+		return key;	
+	};  
+	 
+		  
+    switch(toLanguage){
+        case 'ru':
+            return this.toRussian[word] ? this.toRussian[word] : def(word);
+    }
+    
+    return word;
+  }
+});
+]]></CSP>
+</Export>

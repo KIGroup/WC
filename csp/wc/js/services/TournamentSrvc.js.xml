@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/services/TournamentSrvc.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//h
+
+/*===========================================================================================
+Tournament
+===========================================================================================*/
+
+servicesModule.factory('TournamentSrvc', function(RESTSrvc, UtilsSrvc) {    
+    return {
+        getAllForGrid: function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other){
+            return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/grid/tournament' + UtilsSrvc.getUrlParametersForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other)});
+        },
+        getAll: function(filterParams){
+        	return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/tournament' + (filterParams ? ('?' + filterParams) : '')});
+        }
+    }
+});
+]]></CSP>
+</Export>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/font-awesome/less/fixed-width.less" application="/csp/wdsfcontroller/"><![CDATA[
+// Fixed Width Icons
+// -------------------------
+.@{fa-css-prefix}-fw {
+  width: (18em / 14);
+  text-align: center;
+}
+]]></CSP>
+</Export>

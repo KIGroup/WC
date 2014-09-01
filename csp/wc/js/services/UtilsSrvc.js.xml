@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/services/UtilsSrvc.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//d
+
+/*===========================================================================================
+Utils
+===========================================================================================*/
+
+servicesModule.factory('UtilsSrvc', function($dialog, $filter) {
+	
+	return {
+		openMessageBox: function(title, msg, func){
+    		var btns = [{result: true, label: 'Ок', cssClass: 'btn-primary btn-small'}, 
+                        {result: false, label: $filter('localize')('Отмена'), cssClass: 'btn-small'}];
+
+    		$dialog.messageBox($filter('localize')(title), $filter('localize')(msg), btns).open().then(function(result){
+    		 	if (result && func)
+    		 		func(); 
+    		 });
+    	},
+    	openCustomMessageBox: function(title, msg, btns){
+    		$dialog.messageBox($filter('localize')(title), $filter('localize')(msg), btns).open().then(function(result){
+    		 	for (var i=0; i < btns.length; i++){
+	    			if (result == btns[i].result && btns[i].func)
+	    				btns[i].func();
+	    		}
+    		 });
+    	},
+    	getAlert: function(title, msg, eventType, visible){
+        	if (eventType == 'error'){
+        		msg = msg.replace(/#5001/g, '');
+        	}
+        	
+        	return {title: $filter('localize')(title),
+                    msg: $filter('localize')(msg),
+                    cssClass: 'alert alert-' + eventType,
+                    visible: visible};
+    	},
+        getIndexes: function(array, objField, valueField){
+            var indexes = [];
+            
+            if (!array) return indexes;
+            
+            for (var i = 0; i < array.length; i++) {
+                if (array[i][objField] == valueField)
+                    indexes.push(i);
+            };
+            return indexes;
+        },
+        getValidDate: function(str){
+	        var date = new Date(str);
+	        if (isNaN(date))
+	        	return "";
+	        	
+	        return $filter('date')(date, 'yyyy-MM-dd');
+	    },
+	   	getTwoDate: function(start, finish){
+	    	var startText = $filter('convertCacheDate')(start, $filter('localize')('d MMMM y'));
+            if (start == finish){
+		   		return startText;
+		   	}
+		   	
+            var finishText = $filter('convertCacheDate')(finish, $filter('localize')('d MMMM y'));
+				
+			var startYearBorder = startText.indexOf(" ", 3);
+			if (startYearBorder > 0){
+				startText = startText.substring(0, startYearBorder); 	
+			}
+				
+            return startText + ' - ' +  finishText;
+	    },
+        getPropertyValue: function (item, propertyStr, defaultValue){
+            var value = item;
+            defaultValue = defaultValue ? defaultValue : '';
+
+            try{
+                var properties = propertyStr.split('.');
+                for (var i = 0; i < properties.length; i++){
+                    value = value[properties[i]];
+                
+                    if (value !== Object(value))
+                        break;
+                }
+            }
+            catch(ex){
+                console.log('Дело пахнет керосином');
+            }
+
+            return value == undefined ? defaultValue : value;
+        },
+        getUrlParametersForGrid: function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other){
+            var first = pageSize * (pageCurr - 1) + 1;
+            var urlTail = '?' +
+                          'first=' + first + '&' +
+                          'last=' + (first + pageSize - 1) + '&' +
+                          'isDown=' + (isDown*1) + '&' +
+                          'sqlName=' + sqlName + '&' +
+                          'searchSqlName=' + searchSqlName + '&' +
+                          'searchText=' + searchText;
+            if (other){
+                urlTail += '&' + other;             
+            }
+            return urlTail;
+        }
+    }
+});
+  
+]]></CSP>
+</Export>

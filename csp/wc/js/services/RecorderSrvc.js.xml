@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/services/RecorderSrvc.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//d
+
+/*===========================================================================================
+Recorder
+===========================================================================================*/
+
+servicesModule.factory('RecorderSrvc', function(RESTSrvc, UtilsSrvc) {    
+    return {
+        save: function(obj){
+            return RESTSrvc.getPromise({method: 'POST', url: AppSettings.admin + '/recorder', data: obj});
+        },
+        get: function(id){
+            return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/recorder/' + id});
+        },
+        remove: function(id){
+            return RESTSrvc.getPromise({method: 'DELETE', url: AppSettings.admin + '/recorder/' + id});
+        },
+        getAllForGrid: function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other){
+            return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/grid/recorder' + UtilsSrvc.getUrlParametersForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other)});
+        },
+        addTournament: function(recId, trnId){
+            return RESTSrvc.getPromise({method: 'POST', url: AppSettings.admin + '/recorder/' + recId + '/tournament/' + trnId});
+        },
+        removeTournament: function(recId, trnId){
+            return RESTSrvc.getPromise({method: 'DELETE', url: AppSettings.admin + '/recorder/' + recId + '/tournament/' + trnId});
+        },
+        getNotAddedTournaments: function(recId, filterParams){
+        	return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/recorder/' + recId + '/tournament' + (filterParams ? ('?' + filterParams) : '')});
+        }
+    }
+});
+]]></CSP>
+</Export>

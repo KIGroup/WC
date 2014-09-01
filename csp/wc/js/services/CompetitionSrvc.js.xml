@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/services/CompetitionSrvc.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//d
+
+/*===========================================================================================
+Competition
+===========================================================================================*/
+
+servicesModule.factory('CompetitionSrvc', function(RESTSrvc, UtilsSrvc) {    
+    return {
+    	getYears: function(){
+    		return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/year'});
+    	},
+        getAllForGrid: function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other){
+            return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/grid/competition' + UtilsSrvc.getUrlParametersForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other)});
+        }
+    }
+});
+]]></CSP>
+</Export>

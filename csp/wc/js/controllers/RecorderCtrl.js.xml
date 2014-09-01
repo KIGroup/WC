@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/controllers/RecorderCtrl.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//dddddfdd
+
+/*===========================================================================================
+Recorder - create|edit
+===========================================================================================*/
+
+controllersModule.controller('RecorderCtrl', function($scope, $routeParams, $window, RecorderSrvc, UtilsSrvc){
+    $scope.objForm = {};
+    
+    $scope.objForm.init = function(){
+        if (!isNaN(parseInt($routeParams.id))){
+            $scope.objForm.caption = 'Editing recorder';
+            $scope.objForm.actionName = 'Save';
+            $scope.objForm.loadData($routeParams.id);    
+        }
+        else{
+            $scope.objForm.caption = 'Adding recorder';
+            $scope.objForm.actionName = 'Add';
+        }
+    };
+
+    // Загрузить
+    $scope.objForm.loadData = function(id){
+        RecorderSrvc.get(id).then(
+            function(data){
+                $scope.objForm.obj = data;
+            },
+            function(response){
+                 $scope.objForm.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            }); 
+    };
+
+    // Сохранить / создать
+    $scope.objForm.submit = function(){
+        RecorderSrvc.save($scope.objForm.obj).then(
+            function(data){
+	            if (!$scope.objForm.obj.id){
+                	$scope.objForm.alert = UtilsSrvc.getAlert('Done!', 'Recorder has been created.', 'success', true);
+                	$scope.objForm.obj = {};
+	            }
+                else{
+                	$scope.objForm.alert = UtilsSrvc.getAlert('Done!', 'Changes have been saved.', 'success', true);
+                }
+                
+                $scope.cForm.$setPristine();
+            },
+            function(data){
+                $scope.objForm.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            }); 
+    };
+
+    // Отмена - возврат на пред. страницу
+    $scope.objForm.cancel = function(){
+        $window.history.back();
+    };
+
+
+    $scope.objForm.init();
+});
+    
+
+]]></CSP>
+</Export>

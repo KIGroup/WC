@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/partials/tournaments.csp" application="/csp/wdsfcontroller/"><![CDATA[
+<div class="row-fluid">
+	<div class="row-fluid">
+		<div class="span8">
+			<label style="padding: 5px 5px 0 5px; font-weight: bold;" ng-bind="'Tournaments'|localize"></label>
+		</div>
+		<div class="span4">
+        </div>
+	</div>
+</div>
+
+<stcalert data="page.alert"/>
+]]></CSP>
+</Export>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/partials/recorder.csp" application="/csp/wdsfcontroller/"><![CDATA[
+<div class="row-fluid">
+	<div class="span4">
+	</div>
+	<div class="span4">
+		<div class="accordion">
+			<div class="accordion-group">
+				<div class="accordion-heading">
+					<a class="accordion-toggle" ng-bind="objForm.caption|localize"></a>
+				</div>
+				<div class="accordion-body">
+					<div class="accordion-inner">
+						<form name="cForm" ng-submit="objForm.submit()">
+							<div class="control-group">
+						        <label class="control-label" ng-bind="('Login'|localize) + '*'"></label>
+						        <div class="controls">
+						            <input class="span12" type="text" ng-model="objForm.obj.login" required></input>
+						        </div>
+						    </div>
+						    <div class="control-group">
+						        <label class="control-label" ng-bind="('Name'|localize) + '*'"></label>
+						        <div class="controls">
+						            <input class="span12" type="text" ng-model="objForm.obj.name" required></input>
+						        </div>
+						    </div>
+						    <div class="control-group">
+						        <label class="control-label" ng-bind="('Other information'|localize)"></label>
+						        <div class="controls">
+						            <input class="span12" type="text" ng-model="objForm.obj.otherInfo"></input>
+						        </div>
+						    </div>
+						    <div class="control-group">
+						        <div class="controls">
+						            <button type="submit" class="btn btn-primary btn-small" ng-bind="objForm.actionName|localize" ng-disabled="cForm.$pristine"></button>
+						            <button type="button" class="btn btn-small" ng-click="objForm.cancel()" ng-bind="'Back'|localize"></button>
+						        </div>
+						    </div>    		    		    
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="span4">
+	</div>
+</div>
+
+<div class="row-fluid">
+	<div class="span4">
+	</div>
+	<div class="span4">
+		<stcalert data="objForm.alert"/>
+	</div>
+	<div class="span4">
+	</div>
+</div>]]></CSP>
+</Export>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/controllers/TournamentsCtrl.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//-dddd
+
+/*===========================================================================================
+
+===========================================================================================*/
+
+controllersModule.controller('TournamentsCtrl', function($scope, $location, $filter, UtilsSrvc){
+	$scope.menu.selectMenu($scope.menu.pages.tournaments);
+	$scope.page = {};
+});
+
+]]></CSP>
+</Export>

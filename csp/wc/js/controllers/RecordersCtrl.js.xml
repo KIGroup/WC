@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/controllers/RecordersCtrl.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//ddc вdd
+
+/*===========================================================================================
+Recorders
+===========================================================================================*/
+
+controllersModule.controller('RecordersCtrl', function($scope, $routeParams, $location, $filter, UtilsSrvc, CompetitionSrvc, RecorderSrvc, TournamentSrvc){
+	$scope.menu.selectMenu($scope.menu.pages.recorders);
+    
+    if (!$scope.pageStore.recorders){
+        $scope.pageStore.recorders = {gridTournaments:{}, gridRecorders:{}};
+    }
+	
+	$scope.recTable = {};
+	$scope.trnTable = {modal:{}};
+	
+    $scope.init = function(){
+        // 
+    	// Recorder table
+    	//
+        $scope.recTable.columns = [
+                          {name: 'Login', sqlName: 'Login', isSorted: true , isSortable: true, isDown: true, isSearched: true, isSearchable: true},
+                          {name: 'Full name', sqlName: 'Name', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Other information', sqlName: 'OtherInfo', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
+                          {name: 'Available tournaments', sqlName: '', isSorted: false, isSortable: false, isDown: true, isSearched: false, isSearchable: false}];
+        
+        $scope.recTable.properties = [
+        				  {name:'login'},
+                          {name:'name'},
+                          {name:'otherInfo'},
+                          {name:'tournamentsCount'}];  
+
+        $scope.recTable.pageSize = 15;
+        $scope.recTable.pageCurr = 1;
+        $scope.recTable.itemsTotal = 0;
+        $scope.recTable.selectedItems = [];
+        $scope.recTable.multiSelectMode = false;
+        $scope.recTable.forciblyUpdate = 0;
+        $scope.recTable.refresh();
+
+
+        // 
+        // Recorder tournaments table
+        //
+        $scope.trnTable.columns = [
+                          {name: 'Country', sqlName: 'CountryStr', isSorted: false , isSortable: true, isDown: true, isSearched: true, isSearchable: true},
+                          {name: 'Dates', sqlName: 'StartDate', isSorted: true , isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Disciplines', sqlName: 'DisciplinesStr', isSorted: false , isSortable: true, isDown: false, isSearched: false, isSearchable: true},
+                          {name: 'Types', sqlName: 'TypesStr', isSorted: false , isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Age groups', sqlName: 'AgeGroupsStr', isSorted: false , isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Competitions', sqlName: 'CompetitionsCount', isSorted: false , isSortable: true, isDown: true, isSearched: false, isSearchable: false}];
+        
+        $scope.trnTable.properties = [
+                          {name:'country'},
+                          {name:'dates',
+                           calculate: function(item){
+	                       		item.dates = UtilsSrvc.getTwoDate(item.startDate, item.endDate);
+	                       }},
+                          {name:'disciplines'},
+                          {name:'types'},
+                          {name:'ageGroups'},
+                          {name:'competitionsCount'}];  
+
+        $scope.trnTable.pageSize = 10;
+        $scope.trnTable.pageCurr = 1;
+        $scope.trnTable.itemsTotal = 0;
+        $scope.trnTable.selectedItems = [];
+        $scope.trnTable.multiSelectMode = false;
+        $scope.trnTable.forciblyUpdate = 0;
+    };
+
+    //
+    //
+    // Recorders
+    //
+    //
+    $scope.recTable.loadItems = function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText){   
+        RecorderSrvc.getAllForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, null).then(
+            function(data){
+	            data = data.children;
+                $scope.recTable.pageTotal = Math.ceil(data.itemsTotal / pageSize);
+                $scope.recTable.itemsTotal = data.itemsTotal;
+                $scope.recTable.items = data.items;
+
+                if ($scope.recTable.selectedItems && $scope.recTable.items && $scope.recTable.selectedItems.length == 0 && $scope.recTable.items.length != 0){
+                    $scope.recTable.items[0].rowClass = 'success';
+                    $scope.recTable.selectedItems = [$scope.recTable.items[0]];
+                    $scope.recTable.onSelect($scope.recTable.selectedItems[0]);
+                }
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.recTable.onSelect = function(item){
+        if (!item)  return;
+        
+        $scope.trnTable.refresh();
+    };
+
+    $scope.recTable.onSelectCell = function(item, property){ 
+        if (!item) return;
+        property.onClickCell(item.id);
+    };
+ 
+    $scope.recTable.refresh = function(){ 
+        $scope.recTable.forciblyUpdate++; 
+    };
+
+    $scope.recTable.add = function(){
+        $location.path("/recorder"); 
+    };
+
+    $scope.recTable.edit = function(item){
+        $location.path("/recorder/" + item.id); 
+    };
+  
+    $scope.recTable.remove = function(item){
+        function remove(){
+            RecorderSrvc.remove(item.id).then(
+                function(data){
+                    $scope.recTable.selectedItems = [];
+                    $scope.recTable.refresh();
+                    $scope.alert = UtilsSrvc.getAlert('Done!', 'Recorder has been removed.', 'success', true);
+                },
+                function(data, status, headers, config){
+                    $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+                });  
+        };
+
+        UtilsSrvc.openMessageBox('Remove recorder?', item.login + ' (' + item.name + ')', remove);  
+    };
+    
+
+    //
+    //
+    // Tournaments
+    //
+    //
+    $scope.trnTable.loadItems = function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText){   
+        TournamentSrvc.getAllForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, 'recorderId=' + $scope.recTable.selectedItems[0].id).then(
+            function(data){
+                data = data.children;
+                $scope.trnTable.pageTotal = Math.ceil(data.itemsTotal / pageSize);
+                $scope.trnTable.itemsTotal = data.itemsTotal;
+                $scope.trnTable.items = data.items;
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Внимание!', data, 'error', true);
+            });
+    };
+
+    $scope.trnTable.onSelect = function(item){
+        if (!item) return;
+    };
+
+    $scope.trnTable.onSelectCell = function(item, property){ 
+        if (!item) return;
+        property.onClickCell(item.id);
+    };
+ 
+    $scope.trnTable.refresh = function(){ 
+        $scope.trnTable.forciblyUpdate++; 
+    };
+
+    $scope.trnTable.add = function(){
+	    $('#trnModal').modal('show');
+	    $scope.trnTable.modal.visible = true;
+	    $scope.trnTable.modal.year = null;
+	    $scope.trnTable.modal.tournamentId = null;
+    };
+
+    $scope.trnTable.remove = function(item){
+	    function remove(){
+            RecorderSrvc.removeTournament($scope.recTable.selectedItems[0].id, item.id).then(
+                function(data){
+                    $scope.recTable.refresh();
+                    $scope.trnTable.refresh();
+                    $scope.alert = UtilsSrvc.getAlert('Done!', 'Tournament has been removed.', 'success', true);
+                },
+                function(data, status, headers, config){
+                    $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+                });  
+        };
+
+        UtilsSrvc.openMessageBox('Remove tournament privilege for recorder?', item.country + ', ' + item.startDate + ' - ' + item.endDate, remove);  
+    };
+    
+
+    /// 
+    ///
+    /// Modal window - add tournament for recorder
+    ///
+    /// 
+    $scope.trnTable.modal.getYears = function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText){   
+        CompetitionSrvc.getYears().then(
+            function(data){
+                $scope.trnTable.modal.years = data.children;
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.trnTable.modal.loadTournamentsByYear = function(year){   
+        TournamentSrvc.getAll('from=' + year + '-01-01&to=' + year + '-12-31&notrecorderId=' + $scope.recTable.selectedItems[0].id).then(
+            function(data){
+                $scope.trnTable.modal.tournaments = data.tournaments;
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+
+    $scope.trnTable.modal.addTournament = function(){   
+        RecorderSrvc.addTournament($scope.recTable.selectedItems[0].id, $scope.trnTable.modal.tournamentId).then(
+            function(data){
+	            $scope.alert = UtilsSrvc.getAlert('Done!', 'Tournament has been added.', 'success', true);
+                $scope.trnTable.modal.close();
+                $scope.recTable.refresh();
+                $scope.trnTable.refresh();
+            },
+            function(data){
+                $scope.trnTable.modal.close();
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+
+    $scope.trnTable.modal.close = function(){   
+        $('#trnModal').modal('hide');
+        $scope.trnTable.modal.visible = false;
+    };
+
+
+    $scope.init();
+    $scope.trnTable.modal.getYears();
+});
+
+]]></CSP>
+</Export>

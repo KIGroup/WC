@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/services/OtherSrvc.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//dddd
+
+/*===========================================================================================
+Other
+===========================================================================================*/
+
+servicesModule.factory('OtherSrvc', function(RESTSrvc) {    
+    return {
+        getLanguages: function(){
+            return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/language'});
+        },
+        getCountries: function(){
+            return RESTSrvc.getPromise({method: 'GET', url: AppSettings.user + '/country'});
+        },
+        checkAdmin: function(isLogin){
+            return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/checkAdmin/' + isLogin});
+        },
+        setUnknownKey: function(key){
+	        console.log('unknownkey = '+key);
+	        return RESTSrvc.getPromise({method: 'POST', url: AppSettings.user + '/unknownkey', data: {key: key}});
+	    } 
+    }
+});
+]]></CSP>
+</Export>
