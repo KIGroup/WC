@@ -18,16 +18,16 @@ do ##class(WC.Wdsf.API).Call("GET", "/competition/46164?format=json", .resp)</De
  	try 
  	{
   		set req = ##class(%Net.HttpRequest).%New()
-  		set req.SSLConfiguration = $g(^Settings("WC","Wdsf", "SslConfig"))
+  		set req.SSLConfiguration = ##class(WC.Data.Settings).GetWDSFSSL()
   		set req.Server = "services.worlddancesport.org"
   		set req.Https = 1
   		set req.Port = 443
   		set req.ProxyHTTPS = 1
-  		set req.ProxyServer = $g(^Settings("WC","Wdsf", "ProxyServer"))
-  		set req.ProxyPort = $g(^Settings("WC","Wdsf", "ProxyPort"))
-  		set req.ProxyTunnel = $g(^Settings("WC","Wdsf", "ProxyTunnel"))
+  		set req.ProxyServer = ""
+  		set req.ProxyPort = ""
+  		set req.ProxyTunnel = ""
   		
-  		set req.Authorization = "Basic "_$system.Encryption.Base64Encode($g(^Settings("WC","Wdsf", "Login"))_":"_$g(^Settings("WC","Wdsf", "Password")))
+  		set req.Authorization = "Basic "_$system.Encryption.Base64Encode(##class(WC.Data.Settings).GetWDSFLogin()_":"_##class(WC.Data.Settings).GetWDSFPassword())
   		set pUrl = "/api/1"_pUrl
 	 	
   		$$$TOE(sc, req.Send($zconvert(pMethod,"u"), pUrl))
@@ -46,6 +46,7 @@ do ##class(WC.Wdsf.API).Call("GET", "/competition/46164?format=json", .resp)</De
 	 					403 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_403"),
 	 					404 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_404"),
 	 					409 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_409"),
+	 					500 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_500"),
 	 						: $$$OK)
  	}
  	

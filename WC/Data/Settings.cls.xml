@@ -9,7 +9,7 @@
 <Implementation><![CDATA[
 	SET SQLCODE=""
 	&sql(%CHECKPRIV DELETE ON WC_Data.Recorder)
-	if (SQLCODE = 100) quit ##class(WC.Utils.Msg).GetErrorStatus("NoPrivilege", " USERNAME="_$USERNAME)
+	if (SQLCODE = 100) quit ##class(WC.Utils.Msg).GetErrorStatus("error_NoPrivilege", " USERNAME="_$USERNAME)
 	
 	quit $$$OK
 ]]></Implementation>
@@ -24,6 +24,10 @@ do ##class(WC.Data.Settings).Init()</Description>
 	do ##class(WC.Data.Settings).SetWebAppDomain("localhost:57772")
 	do ##class(WC.Data.Settings).SetWebAppNamespace("/csp/wdsfcontroller")
 	do ##class(WC.Data.Settings).SetWebAppAdmin("/csp/wdsfcontroller/admin")
+	do ##class(WC.Data.Settings).SetWDSFLogin("")
+	do ##class(WC.Data.Settings).SetWDSFPassword("")
+	do ##class(WC.Data.Settings).SetWDSFSSL("WDSF")
+	do ##class(WC.Data.Settings).SetWDSFTaskLastSyncDate("2014/08/30")
 ]]></Implementation>
 </Method>
 
@@ -55,7 +59,7 @@ Web                                                                             
 <FormalSpec>key:%String,defaultValue=""</FormalSpec>
 <Private>1</Private>
 <ReturnType>%String</ReturnType>
-<Implementation><![CDATA[	quit $GET(^Settings("WC", "Web", key), defaultValue)
+<Implementation><![CDATA[	quit $GET(^WC.Data.Settings("Web", key), defaultValue)
 ]]></Implementation>
 </Method>
 
@@ -65,7 +69,27 @@ Web                                                                             
 <Private>1</Private>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	set ^Settings("WC", "Web", key) = value
+	set ^WC.Data.Settings("Web", key) = value
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="GetWDSFData">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>key:%String,defaultValue=""</FormalSpec>
+<Private>1</Private>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit $GET(^WC.Data.Settings("WDSF", key), defaultValue)
+]]></Implementation>
+</Method>
+
+<Method name="SetWDSFData">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>key:%String,value</FormalSpec>
+<Private>1</Private>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set ^WC.Data.Settings("WDSF", key) = value
 	quit $$$OK
 ]]></Implementation>
 </Method>
@@ -127,6 +151,66 @@ Web                                                                             
 <FormalSpec>value</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[	quit ..SetWebAppData("Domain", value)
+]]></Implementation>
+</Method>
+
+<Method name="GetWDSFLogin">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWDSFData("Login")
+]]></Implementation>
+</Method>
+
+<Method name="SetWDSFLogin">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWDSFData("Login", value)
+]]></Implementation>
+</Method>
+
+<Method name="GetWDSFPassword">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWDSFData("Password")
+]]></Implementation>
+</Method>
+
+<Method name="SetWDSFPassword">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWDSFData("Password", value)
+]]></Implementation>
+</Method>
+
+<Method name="GetWDSFSSL">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWDSFData("SSL")
+]]></Implementation>
+</Method>
+
+<Method name="SetWDSFSSL">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWDSFData("SSL", value)
+]]></Implementation>
+</Method>
+
+<Method name="GetWDSFTaskLastSyncDate">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..GetWDSFData("TaskLastSyncDate", $REPLACE($ZD($H-1, 3), "-", "/"))
+]]></Implementation>
+</Method>
+
+<Method name="SetWDSFTaskLastSyncDate">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>value</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[	quit ..SetWDSFData("TaskLastSyncDate", value)
 ]]></Implementation>
 </Method>
 </Class>

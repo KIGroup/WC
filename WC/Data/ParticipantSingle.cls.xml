@@ -23,6 +23,7 @@
 	set proxy.selfLink = "http://"_##class(Settings).GetWebAppDomain()_##class(Settings).GetWebAppAdmin()_"/participant/"_..%Id()
 	set proxy.competition = ..Competition.ConvertToProxyObject()
 	set proxy.athlete = ..Athlete.ConvertToProxyObject()
+	set proxy.created = ..CreatedTS
 	
 	quit proxy
 ]]></Implementation>
@@ -38,23 +39,14 @@
 	set participant = $$$NULLOREF
 	set athlete = ##class(WC.Data.Person).SyncWDSF(data.number, 1, .st)
 	if $$$ISERR(st)	{
-		set otherInfo = ##class(%ZEN.proxyObject).%New()
-		set otherInfo.number = data.number
-		set otherInfo.competitionId = competition.%Id()
-		set otherInfo.IsSolo = $$$YES
-		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
-		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Person_SyncFailed", otherInfo)
+		set response = ##class(WC.Utils.Response).PersonSyncFailed(data.number, $SYSTEM.Status.GetErrorText(st))
 		quit participant
 	}
 	
 	// Check allowed age group for competition
-	if (competition.AgeGroup.AllowedToDanceIn.FindOref(athlete.AgeGroup) = ""){
-		set otherInfo = ##class(%ZEN.proxyObject).%New()
-		set otherInfo.isSolo = $$$YES
-		set otherInfo.athleteAgeGroup = athlete.AgeGroup.Name
-		set otherInfo.competitionAgeGroup = competition.AgeGroup.Name 
+	if (competition.AgeGroup.AllowedToDance.FindOref(athlete.AgeGroup) = ""){
 		set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Athlete_AgeGroup_NotAllowedForCompetition")
-		set response = ##class(WC.Utils.Msg).GetResponseObject("error_Athlete_AgeGroup_NotAllowedForCompetition", otherInfo)
+		set response = ##class(WC.Utils.Response).AthleteAgeGroupNotAllowedForCompetition(competition, athlete)
 		quit participant	
 	}
 	
@@ -65,13 +57,7 @@
 	set st = participant.%Save()
 	
 	if $$$ISERR(st) {
-		set otherInfo = ##class(%ZEN.proxyObject).%New()
-		set otherInfo.number = data.number
-		set otherInfo.competitionId = competition.%Id()
-		set otherInfo.IsSolo = $$$YES
-		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
-		set response = ##class(WC.Utils.Msg).GetResponseObject("error_ParticipantSingle_NotCreated", otherInfo)
-		quit participant
+		set response = ##class(WC.Utils.Response).ParticipantSingleNotCreated(competition, athlete, $SYSTEM.Status.GetErrorText(st))
 	}
 	
 	quit participant
@@ -88,30 +74,18 @@
 	set st = ..CmpAthIdxDelete(competition.%Id(), data.number, 4)
 	
 	if $$$ISERR(st) {
-		set otherInfo = ##class(%ZEN.proxyObject).%New()
-		set otherInfo.IsSolo = $$$YES
-		set otherInfo.error = $SYSTEM.Status.GetErrorText(st)
-		set response = ##class(WC.Utils.Msg).GetResponseObject("error_ParticipantSingle_NotRemoved", otherInfo)
-		quit st
+		set response = ##class(WC.Utils.Response).ParticipantSingleNotRemoved(..CmpAthIdxOpen(competition.%Id(), data.number), $SYSTEM.Status.GetErrorText(st))
 	}
 	
 	quit st
 ]]></Implementation>
 </Method>
 
-<Method name="IsExists">
+<Method name="GetByNumbers">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>competitionId:%String,number:%String</FormalSpec>
 <ReturnType>%Boolean</ReturnType>
-<Implementation><![CDATA[
-	set count = 0
-	
-	&sql(SELECT COUNT(ID) INTO :count
-			 FROM WC_Data.ParticipantSingle
-			 WHERE Competition = :competitionId AND Athlete = :number)
-			 
-	quit:(count>0) $$$YES
-	quit $$$NO
+<Implementation><![CDATA[	quit ..CmpAthIdxOpen(competitionId, number)
 ]]></Implementation>
 </Method>
 

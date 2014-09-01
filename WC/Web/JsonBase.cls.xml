@@ -115,11 +115,12 @@ Delete "garbage" from input parameters</Description>
 <FormalSpec>parameter:%String</FormalSpec>
 <ReturnType>%String</ReturnType>
 <Implementation><![CDATA[
-	set parameter = $ZCONVERT(parameter, "U")
-	set badWords = $LB("SELECT", "DELETE", "UNION", "FROM", "INSERT", "'")
-	for i=1:1:$LL(badWords){
-		set parameter = $REPLACE(parameter, $LIST(badWords, i), "")
-	}
+	set parameter = $EXTRACT(parameter, 0, 20)
+	set parameter = $REPLACE(
+						$REPLACE(
+							$REPLACE(parameter, "'", ""), 
+						"_", ""),
+					".", "")
 	
 	quit parameter
 ]]></Implementation>

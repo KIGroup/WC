@@ -16,56 +16,35 @@ Get error status by key</Description>
 
 <Method name="GetMsg">
 <Description>
-Get localized error message</Description>
+Get localized message</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec>key</FormalSpec>
+<FormalSpec>key:%String</FormalSpec>
 <ReturnType>%String</ReturnType>
-<Implementation><![CDATA[	quit $GET(^CacheMsg("WC", $$$SessionLanguage, key), "No msg for key = "_key)
+<Implementation><![CDATA[	quit $GET(^WC.Utils.Msg($$$SessionLanguage, key), "No msg for key = "_key)
 ]]></Implementation>
 </Method>
 
-<Method name="GetResponseCode">
+<Method name="SetMsg">
 <Description>
-Get localized error message</Description>
+Set localized message</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec>key</FormalSpec>
-<ReturnType>%String</ReturnType>
-<Implementation><![CDATA[	quit $GET(^CacheMsg("WC", "Code", key), 0)
-]]></Implementation>
-</Method>
-
-<Method name="GetResponseObject">
-<Description>
-Get response object</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>key:%String,data:%RegisteredObject=""</FormalSpec>
-<ReturnType>%ZEN.proxyObject</ReturnType>
-<Implementation><![CDATA[
-	set response = ##class(%ZEN.proxyObject).%New()
-	set response.code = ..GetResponseCode(key)
-	set response.status = ..GetMsg($SELECT(response.code>=2000 : "Error", 
-								  		   response.code>=1000 : "Success", 
-												             1 : "Unknown"))
-	set response.message = ..GetMsg(key)
-	
-	if $ISOBJECT(data){
-		set response.data = data
-	}
-	
-	quit response
-]]></Implementation>
-</Method>
-
-<Method name="InitResponseMsg">
-<Description>
-do ##class(WC.Utils.Msg).InitResponseMsg()</Description>
-<ClassMethod>1</ClassMethod>
-<FormalSpec>key:%String,code:%Integer,msgRu:%String,msgEn:%String</FormalSpec>
+<FormalSpec>lang:%String,key:%String,value:%String</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	set ^CacheMsg("WC", "Code", key) = code
-	set ^CacheMsg("WC", "ru", key) = msgRu
-	set ^CacheMsg("WC", "en", key) = msgEn
+	set ^WC.Utils.Msg(lang, key) = value
+	quit $$$OK
+]]></Implementation>
+</Method>
+
+<Method name="SetMsgForLangs">
+<Description>
+Set localized messages for langs</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>key:%String,ruValue:%String,enValue:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	do ..SetMsg("ru", key, ruValue)
+	do ..SetMsg("en", key, enValue)
 	quit $$$OK
 ]]></Implementation>
 </Method>
@@ -76,50 +55,60 @@ do ##class(WC.Utils.Msg).Init()</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	set ^CacheMsg("WC", "ru", "Error") = "Ошибка"
-	set ^CacheMsg("WC", "en", "Error") = "Error"
+	do ..SetMsgForLangs("error_Recorder_MarkUnused", "Не удалось удалить регистратор.", 
+													 "Unable to remove the recorder.")
 	
-	set ^CacheMsg("WC", "ru", "Success") = "Успех"
-	set ^CacheMsg("WC", "en", "Success") = "Success"
-
-	do ..InitResponseMsg("success_Registration_Completed", 1010, "Регистрация завершена.", "Registration is completed.")
-	do ..InitResponseMsg("success_Registration_Exists"   , 1011, "Регистрация уже выполнена.", "Registration has already been done.")
-	do ..InitResponseMsg("success_Registration_NotExists", 1012, "Регистрации нет.", "Registration not exists.")
-	do ..InitResponseMsg("success_Registration_Removed"  , 1013, "Регистрация удалена.", "Registration has been removed.")
+	do ..SetMsgForLangs("error_Recorder_AddTournament", "Не удалось добавить турнир регистратору.", 
+														"Failed to add tournament for recorder.")
 	
-	do ..InitResponseMsg("error_Recorder_NotFound"    , 2010, "Регистратор не найден.", "Recorder not found.")
-	do ..InitResponseMsg("error_Recorder_NoPrivileges", 2011, "У регистратора нет привилегий на запись в турнир.", "Recorder has no privileges to write to the tournament.")
+	do ..SetMsgForLangs("error_Recorder_RemoveTournament", "Не удалось удалить турнир у регистратора.", 
+														   "Failed to remove the tournament from the recorder.")
 	
-	do ..InitResponseMsg("error_Competition_NotFound"                    , 2020, "Группа не найдена.", "Competition not found.")
-	do ..InitResponseMsg("error_Competition_UnusableStatus"              , 2021, "Статус группы не позволяет выполнить регистрацию.", "Competition status does not allow registration.")
-	do ..InitResponseMsg("error_Competition_Solo_OnlyOneNumberIsRequired", 2022, "Группа для 'соло' участников. Введите один номер.", "Competiiton for 'solo' participants. Only one athlete number is required.")
-	do ..InitResponseMsg("error_Competition_Conflict_SameDayRegistration", 2023, "Регистрация участника в данную группу невозможна. Спортсмен уже принимает участие в группе другого турнира в день.", "Registration of participants in this group is not possible. Athlete is already taking part in the tournament in the group another day.")
+	do ..SetMsgForLangs("error_WDSF_ResponseCode_401", "Неавторизованное соединение с WDSF. Нет доступа.", 
+													   "Unauthorized WDSF connection. The authorization failed or is missing.")
 	
-	do ..InitResponseMsg("error_Athlete_EmptyNumber"                      , 2030, "Пустой номер спортсмена.", "Empty athlete number.")
-	do ..InitResponseMsg("error_Athlete_AgeGroup_NotAllowedForCompetition", 2031, "Спортсмен не допускается к регистрации из-за своего возраста.", "Athlete is not allowed to register because of his age.")
+	do ..SetMsgForLangs("error_WDSF_ResponseCode_403", "Доступ к ресурсу WDSF запрещен.", 
+													   "Forbidden WDSF connection. Access to this resource is forbidden.")
 	
+	do ..SetMsgForLangs("error_WDSF_ResponseCode_404", "Ресурс WDSF не найден.", 
+													   "Not found WDSF resource. The requested resource does not exist.")
 	
-	do ..InitResponseMsg("error_Couple_NotFoundInWDSF"   , 2040, "Пара не найдена в базе данных WDSF.", "Couple not found in WDSF database.")
-	do ..InitResponseMsg("error_Couple_NotFoundByNumbers", 2041, "Пара не найдена по номерам спортсменов.", "Couple not found by numbers.")
-	do ..InitResponseMsg("error_Couple_SyncFailed"       , 2042, "Синхронизация данных пары с WDSF завершилась ошибкой.", "Synchronization couple with WDSF failed.")
+	do ..SetMsgForLangs("error_WDSF_ResponseCode_409", "Конфликт с WDSF при соединении. Ресурс не может быть добавлен / обновление из-за конфликта.", 
+													   "Conflict WDSF connection. The resource could not be added/updated because of a conflict.")
 	
-	do ..InitResponseMsg("error_Person_SyncFailed", 2050, "Синхронизация данных спортсмена с WDSF завершилась ошибкой.", "Synchronization athlete with WDSF failed.")
-
-	do ..InitResponseMsg("error_ParticipantCouple_NotCreated", 2060, "Пара не зарегистрирована, не удалось создать запись.", "Couple is not registered, it was not possible to create an entry.")
-	do ..InitResponseMsg("error_ParticipantSingle_NotCreated", 2061, "Участник не зарегистрирован, не удалось создать запись.", "Participant is not registered, it was not possible to create an entry.")
+	do ..SetMsgForLangs("error_WDSF_ResponseCode_500", "Ошибка 500 на сервере WDSF.", 
+													   "HTTP Status 500. Internal server error WDSF.")
 	
+	do ..SetMsgForLangs("error_Couple_NotFoundByNumbers", "Пара не найдена по номерам спортсменов.", 
+														  "Couple not found by athlete numbers.")
 	
-	set ^CacheMsg("WC", "ru", "error_WDSF_ResponseCode_401") = "Неавторизованное соединение с WDSF. Нет доступа."
-	set ^CacheMsg("WC", "en", "error_WDSF_ResponseCode_401") = "Unauthorized WDSF connection. The authorization failed or is missing."
+	do ..SetMsgForLangs("error_Couple_AgeGroup_NotAllowedForCompetition", "Регистрация пары невозможна, т.к. возрастная группа не подходит.", 
+																		  "Register couple is impossible, because age group is not suitable.")
 	
-	set ^CacheMsg("WC", "ru", "error_WDSF_ResponseCode_403") = "Доступ к ресурсу WDSF запрещен."
-	set ^CacheMsg("WC", "en", "error_WDSF_ResponseCode_403") = "Forbidden WDSF connection. Access to this resource is forbidden."
+	do ..SetMsgForLangs("error_Couple_StatusNotActive", "Статус пары не 'Active'.", 
+														"Couple status is not 'Active'.")
 	
-	set ^CacheMsg("WC", "ru", "error_WDSF_ResponseCode_404") = "Ресурс WDSF не найден."
-	set ^CacheMsg("WC", "en", "error_WDSF_ResponseCode_404") = "Not Found WDSF connection. The requested resource does not exist."
+	do ..SetMsgForLangs("error_Athlete_AgeGroup_NotAllowedForCompetition", "Регистрация спортсмена невозможна, т.к. возрастная группа не подходит.", 
+																		   "Register athlete is impossible, because age group is not suitable.")
 	
-	set ^CacheMsg("WC", "ru", "error_WDSF_ResponseCode_409") = "Конфликт с WDSF при соединении. Ресурс не может быть добавлен / обновление из-за конфликта."
-	set ^CacheMsg("WC", "en", "error_WDSF_ResponseCode_409") = "Conflict WDSF connection. The resource could not be added/updated because of a conflict."
+	do ..SetMsgForLangs("error_RecorderNoPrivileges", "Нет привилегий у регистратора.", 
+													  "Recorder has no privileges.")
+	
+	do ..SetMsgForLangs("error_NoPrivilege", "Нет привилегий.", 
+											 "No privileges.")
+	
+	do ..SetMsgForLangs("error_Recorder_Create", "Создание регистратора невозможно.", 
+												 "Create recorder is impossible.")
+	
+	do ..SetMsgForLangs("error_Recorder_Save", "Сохранение регистратора невозможно.", 
+											   "Save recorder is impossible.")
+	
+	/*
+	do ..SetMsgForLangs("", "", "")
+	do ..SetMsgForLangs("", "", "")
+	do ..SetMsgForLangs("", "", "")
+	*/
+	
 	q $$$OK
 ]]></Implementation>
 </Method>

@@ -19,12 +19,12 @@
 <Required>1</Required>
 </Property>
 
-<Method name="IsExists">
+<Method name="GetByNymbers">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>competitionId:%String,manNumber:%String,womanNumber:%String</FormalSpec>
-<ReturnType>%Boolean</ReturnType>
+<ReturnType>Participant</ReturnType>
 <Implementation><![CDATA[
-	quit:'##class(Competition).%ExistsId(competitionId) $$$NO
+	quit:'##class(Competition).%ExistsId(competitionId) $$$NULLOREF
 	
 	set isSolo = $$$NO
 	&sql(SELECT IsSolo INTO :isSolo FROM WC_Data.Competition WHERE ID = :competitionId)
@@ -33,13 +33,13 @@
 		set number = manNumber
 		if (number = "") set number = womanNumber
 		
-		quit ##class(ParticipantSingle).IsExists(competitionId, number)
+		quit ##class(ParticipantSingle).GetByNumbers(competitionId, number)
 	}
 	else{
-		quit ##class(ParticipantCouple).IsExists(competitionId, manNumber, womanNumber)
+		quit ##class(ParticipantCouple).GetByNumbers(competitionId, manNumber, womanNumber)
 	}
 	
-	quit $$$NO
+	quit $$$NULLOREF
 ]]></Implementation>
 </Method>
 
@@ -70,6 +70,9 @@
 </Value>
 <Value name="3">
 <Value>Competition</Value>
+</Value>
+<Value name="4">
+<Value>CreatedTS</Value>
 </Value>
 </Data>
 </Storage>

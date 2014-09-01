@@ -9,7 +9,7 @@
 <Required>1</Required>
 </Property>
 
-<Property name="AllowedToDanceIn">
+<Property name="AllowedToDance">
 <Type>AgeGroup</Type>
 <Collection>list</Collection>
 <Parameter name="CollectionDisplayDelimiter" value="&quot;,&quot;"/>
@@ -50,11 +50,24 @@
 </Index>
 
 <Method name="ConvertToProxyObject">
+<FormalSpec>fullInfo:%Boolean=0</FormalSpec>
 <ReturnType>%ZEN.proxyObject</ReturnType>
 <Implementation><![CDATA[
 	set proxy = ##class(%ZEN.proxyObject).%New()
 	set proxy.id = ..%Id()
 	set proxy.name = ..Name
+	set proxy.fromAge = ..FromAge
+	set proxy.toAge = ..ToAge
+	set proxy.maxDob = $ZD(..MaxDob, 3)
+	set proxy.minDob = $ZD(..MinDob, 3)
+	set proxy.division = ..Division.Name
+	
+	if (fullInfo){
+		set proxy.allowedToDance = ##class(%ListOfDataTypes).%New()
+		for i=1:1:..AllowedToDance.Count(){
+			do proxy.allowedToDance.Insert(..AllowedToDance.GetAt(i).Name)
+		}
+	}
 	
 	quit proxy
 ]]></Implementation>
@@ -96,8 +109,8 @@
 	quit:(age = checkingAge) $$$YES
 	
 	set ageObj = ..NameIdxOpen(age)
-	for i=1:1:ageObj.AllowedToDanceIn.Count(){
-		if (ageObj.AllowedToDanceIn.GetAt(i).Name = checkingAge) return $$$YES
+	for i=1:1:ageObj.AllowedToDance.Count(){
+		if (ageObj.AllowedToDance.GetAt(i).Name = checkingAge) return $$$YES
 	}
 	
 	quit $$$NO
@@ -144,14 +157,14 @@ w ##class(WC.Data.AgeGroup).Import()</Description>
 			set group = groups.GetAt(i)
 			set age = ..NameIdxOpen(group.name)
 			
-			if (age.AllowedToDanceIn.FindObjectId(age.%Id()) = "") {
-				do age.AllowedToDanceIn.Insert(age)
+			if (age.AllowedToDance.FindObjectId(age.%Id()) = "") {
+				do age.AllowedToDance.Insert(age)
 			}
 			
 			for k=1:1:group.AllowedToDanceIn.Count(){
 				set storedAge = ..NameIdxOpen(group.AllowedToDanceIn.GetAt(k))
-				if (age.AllowedToDanceIn.FindObjectId(storedAge.%Id()) = ""){
-					do age.AllowedToDanceIn.Insert(storedAge)
+				if (age.AllowedToDance.FindObjectId(storedAge.%Id()) = ""){
+					do age.AllowedToDance.Insert(storedAge)
 				}
 			}
 			$$$THROWONERROR(st, age.%Save())
@@ -185,19 +198,16 @@ w ##class(WC.Data.AgeGroup).Import()</Description>
 <Value>Name</Value>
 </Value>
 <Value name="3">
-<Value>FromAge</Value>
+<Value>AllowedToDance</Value>
 </Value>
 <Value name="4">
-<Value>ToAge</Value>
-</Value>
-<Value name="5">
 <Value>Division</Value>
 </Value>
-<Value name="6">
-<Value>Allowed</Value>
+<Value name="5">
+<Value>FromAge</Value>
 </Value>
-<Value name="7">
-<Value>AllowedToDanceIn</Value>
+<Value name="6">
+<Value>ToAge</Value>
 </Value>
 </Data>
 </Storage>

@@ -10,21 +10,29 @@ do ##class(WC.Utils.Init).Initialize()</Description>
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	//do ..KillThemAll()
-	/*
+	do ..KillThemAll()
+	
 	w !,"WC.Data.Country"
 	do ##class(WC.Data.Country).Import()
+	
 	w !,"WC.Data.CompetitionStatus"
 	do ##class(WC.Data.CompetitionStatus).Import()
+	
 	w !,"WC.Data.CompetitionType"
 	do ##class(WC.Data.CompetitionType).Import()
+	
 	w !,"WC.Data.Discipline"
 	do ##class(WC.Data.Discipline).Import()
+	
 	w !,"WC.Data.Division"
 	do ##class(WC.Data.Division).Import()
+	
 	w !,"WC.Data.AgeGroup"
 	do ##class(WC.Data.AgeGroup).Import()
-	*/
+	
+	w !,"WC.Data.CoupleStatus"
+	do ##class(WC.Data.CoupleStatus).Import()
+	
 	set lang = ##class(WC.Data.Localization.LTextLanguage).%New()
 	set lang.Code = "ru"
 	set lang.Name = "Русский"
@@ -45,15 +53,53 @@ do ##class(WC.Utils.Init).Initialize()</Description>
 	do ##class(WC.Data.Localization.LTextValue).%KillExtent()
 	do ##class(WC.Data.Localization.LText).%KillExtent()
 	
+	do ##class(WC.Data.AgeGroup).%KillExtent()
+	
 	do ##class(WC.Data.Competition).%KillExtent()
-	do ##class(WC.Data.Tournament).%KillExtent()
 	do ##class(WC.Data.CompetitionStatus).%KillExtent()
 	do ##class(WC.Data.CompetitionType).%KillExtent()
+	
 	do ##class(WC.Data.Country).%KillExtent()
-	do ##class(WC.Data.AgeGroup).%KillExtent()
+	
+	do ##class(WC.Data.Couple).%KillExtent()
+	do ##class(WC.Data.CoupleStatus).%KillExtent()
+	
 	do ##class(WC.Data.Discipline).%KillExtent()
 	do ##class(WC.Data.Division).%KillExtent()
-	do ##class(WC.Data.Discipline).%KillExtent()
+	do ##class(WC.Data.Participant).%KillExtent()
+	do ##class(WC.Data.Person).%KillExtent()
+	do ##class(WC.Data.Recorder).%KillExtent()
+	do ##class(WC.Data.Tournament).%KillExtent()
+	
+	do ##class(WC.Utils.Journal).%KillExtent()
+]]></Implementation>
+</Method>
+
+<Method name="LoadCompetitions">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>from,to</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		TSTART
+		set wdsfData = ##class(WC.Wdsf.API).GetCompetitions("2014-08-01", "2015-01-01",,,,,.st)
+		$$$THROWONERROR(st, st)
+		w !,"Count = "_wdsfData.Count()
+		for i=1:1:wdsfData.Count(){
+			do ##class(WC.Data.Competition).SyncWDSF(wdsfData.GetAt(i).id, 0, .st)
+			$$$THROWONERROR(st, st)
+		}
+		
+		TCOMMIT
+	}
+	catch(ex){
+		TROLLBACK
+		set st = ex.AsStatus()
+	}
+	
+	quit st
 ]]></Implementation>
 </Method>
 

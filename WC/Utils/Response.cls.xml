@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<Class name="WC.Utils.Response">
+<Abstract>1</Abstract>
+<TimeCreated>63429,56507.558858</TimeCreated>
+
+<Method name="RegistrationCompleted">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>participant:WC.Data.Participant</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 1000
+	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация выполнена.", :"Registration completed.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.participant = participant.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="DeregistrationCompleted">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 1001
+	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Дерегистрация выполнена.", :"Deregistration completed.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="RegistrationExists">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>participant:WC.Data.Participant</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 1002
+	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация уже выполнена.", :"Registration has already completed.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.participant = participant.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="RegistrationNotExists">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 1003
+	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация не была выполнена.", :"Registration has not been completed.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="RecorderNotFound">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2000
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистратор не найден.", :"Recorder not found.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="RecorderNoPrivileges">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>tournament:WC.Data.Tournament</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2001
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"У регистратора нет привилегий на запись в турнир.", :"Recorder has no privileges to write into tournament.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.tournament = tournament.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CompetitionNotFound">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2010
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Группа не найдена.", :"Competition not found.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CompetitionStatusNotForRegistration">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competition:WC.Data.Competition</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2011
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы не позволяет выполнить регистрацию.", :"Competition status does not allow registration.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.competition = competition.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CompetitionStatusNotForDeregistration">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competition:WC.Data.Competition</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2012
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы не позволяет выполнить дерегистрацию.", :"Competition status does not allow deregistration.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.competition = competition.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CompetitionIsSoloForOneAthlete">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competition:WC.Data.Competition</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2013
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Группа для 'соло'. Введите один номер спортсмена.", :"Competition for 'solo'. Only one athlete number is required.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.competition = competition.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CompetitionConflictSameDayRegistration">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>conflictCompetitions:%ListOfObjects,athlete:WC.Data.Person</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2014
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация участника в данную группу невозможна. Спортсмен уже принимает участие в группе другого турнира в этот день.", :"Registration of participants in this group is not possible. Athlete is already taking part in the tournament in the group another day.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.conflictCompetitions = conflictCompetitions
+	set response.otherInfo.athlete = athlete.ConvertToProxyObject() 
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="TournamentNotFound">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2020
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Турнир не найден.", :"Tournament not found.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="AthleteEmptyNumber">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2030
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пустой номер спортсмена.", :"Empty athlete number.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="AthleteAgeGroupNotAllowedForCompetition">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competition:WC.Data.Competition,athlete:WC.Data.Person</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2031
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Спортсмен не допускается к регистрации из-за своего возраста.", :"Athlete is not allowed to register because of his age.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.athlete = athlete.ConvertToProxyObject()
+	set response.otherInfo.competition = competition.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CoupleNotFoundInWDSFById">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2040
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не найдена по ИД в базе данных WDSF.", :"Couple not found by id in the WDSF DB.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CoupleNotFoundInWDSFByNumbers">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2041
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не найдена по номерам спортсменов в базе данных WDSF.", :"Couple not found by athlete numbers in the WDSF DB.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CoupleSyncFailed">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>coupleId:%String,errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2042
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Синхронизация данных пары с WDSF завершилась ошибкой.", :"Synchronization couple with WDSF failed.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.coupleId = coupleId
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CoupleAgeGroupNotAllowedForCompetition">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competition:WC.Data.Competition,couple:WC.Data.Couple</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2043
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не допускается к регистрации из-за своей возрастной группы.", :"Couple is not allowed to register because of their age group.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.competition = competition.ConvertToProxyObject()
+	set response.otherInfo.couple = couple.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="CoupleStatusNotActive">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>couple:WC.Data.Couple</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2044
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы не 'Active'.", :"Couple status is not 'Active'.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.couple = couple.ConvertToProxyObject()
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="PersonSyncFailed">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>number:%String,errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2050
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Синхронизация данных спортсмена с WDSF завершилась ошибкой.", :"Synchronization athlete with WDSF failed.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.number = number
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="ParticipantCoupleNotCreated">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competition:WC.Data.Competition,couple:WC.Data.Couple,errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2060
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не зарегистрирована, не удалось создать запись.", :"Couple is not registered, it was not possible to create an entry.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.competition = competition.ConvertToProxyObject()
+	set response.otherInfo.couple = couple.ConvertToProxyObject()
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="ParticipantSingleNotCreated">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competition:WC.Data.Competition,athlete:WC.Data.Person,errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2061
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Участник не зарегистрирован, не удалось создать запись.", :"Participant is not registered, it was not possible to create an entry.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.competition = competition.ConvertToProxyObject()
+	set response.otherInfo.athlete = athlete.ConvertToProxyObject()
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="ParticipantCoupleNotRemoved">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>participant:WC.Data.Participant,errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2062
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru": "Не удалось удалить регистрацию пары.", :"Failed to delete couple registration.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.participant = participant.ConvertToProxyObject()
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="ParticipantSingleNotRemoved">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>participant:WC.Data.Participant,errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2063
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Не удалось удалить регистрацию участника.", :"Failed to delete athlete registration.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.participant = participant.ConvertToProxyObject()
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="ParticipantNotFound">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2064
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Участник не найден.", :"Participant not found.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="DateNotValid">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2500
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Недопустимый формат даты.", :"Invalid date format.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="TimeStampNotValid">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2501
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Дата и время введены некорректно.", :"Date and time entered incorrectly.")
+	quit response
+]]></Implementation>
+</Method>
+</Class>
+</Export>

@@ -4,11 +4,6 @@
 <Super>%CSP.REST</Super>
 <TimeCreated>63370,70531.681464</TimeCreated>
 
-<Parameter name="UseSession">
-<Type>Integer</Type>
-<Default>1</Default>
-</Parameter>
-
 <XData name="UrlMap">
 <Data><![CDATA[
 <Routes>
@@ -118,11 +113,20 @@
 <!-- Get system languages -->
 <Route Method="GET" Url="/language" Call="WC.Web.JsonAdmin:GetLanguages"/>
 
+<!-- Get WDSF Countries -->
+<Route Method="GET" Url="/country" Call="WC.Web.JsonAdmin:GetCountries"/>
+
+<!-- Get WDSF Age groups -->
+<Route Method="GET" Url="/ageGroup" Call="WC.Web.JsonAdmin:GetAgeGroups"/>
+
 <!-- CheckPrivileges -->
 <Route Method="GET" Url="/checkprivileges" Call="WC.Web.JsonAdmin:CheckPrivileges"/>
 
 <!-- Exit | Kill session -->
 <Route Method="GET" Url="/killsession" Call="WC.Web.JsonAdmin:KillSession"/>
+
+
+<Route Method="GET" Url="/response" Call="WC.Web.JsonAdmin:GetResponses"/>
 
 </Routes>
 ]]></Data>
@@ -148,6 +152,8 @@ Dispatch a REST request according to URL and Method</Description>
 	d %response.SetHeader("Access-Control-Max-Age","10000")
 	d %response.SetHeader("Access-Control-Allow-Headers","Content-Type, Authorization, Accept-Language") 
 	
+	set %response.CharSet = "utf-8"
+	set %response.ContentType="application/json"
 	
     #dim tSC As %Status = $$$OK
     #dim e As %Exception.AbstractException
