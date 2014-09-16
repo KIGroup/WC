@@ -5,49 +5,46 @@
 <TimeCreated>63370,70147.479703</TimeCreated>
 
 <Method name="Call">
-<Description>
-do ##class(WC.Wdsf.API).Call("GET", "/competition/46164?format=json", .resp)</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[pMethod:%String,pUrl:%String,&sc:%Status=$$$OK]]></FormalSpec>
-<Private>1</Private>
-<ReturnType>%ZEN.proxyObject</ReturnType>
+<FormalSpec><![CDATA[pMethod:%String,pUrl:%String,&st:%Status=$$$OK]]></FormalSpec>
+<ReturnType>%Library.Base</ReturnType>
 <Implementation><![CDATA[
-	set sc = $$$OK
+	set st = $$$OK
 	set pResponse = ##class(%ZEN.proxyObject).%New()
 	
  	try 
  	{
-  		set req = ##class(%Net.HttpRequest).%New()
-  		set req.SSLConfiguration = ##class(WC.Data.Settings).GetWDSFSSL()
-  		set req.Server = "services.worlddancesport.org"
-  		set req.Https = 1
-  		set req.Port = 443
-  		set req.ProxyHTTPS = 1
-  		set req.ProxyServer = ""
-  		set req.ProxyPort = ""
-  		set req.ProxyTunnel = ""
-  		
-  		set req.Authorization = "Basic "_$system.Encryption.Base64Encode(##class(WC.Data.Settings).GetWDSFLogin()_":"_##class(WC.Data.Settings).GetWDSFPassword())
+		set req = ##class(%Net.HttpRequest).%New()
+		set req.SSLConfiguration = ##class(WC.Data.Settings).GetWDSFSSL()
+	  	set req.Server = "services.worlddancesport.org"
+	  	set req.Https = 1
+	  	set req.Port = 443	
+	  	set req.Authorization = "Basic "_$system.Encryption.Base64Encode(##class(WC.Data.Settings).GetWDSFLogin()_":"_##class(WC.Data.Settings).GetWDSFPassword())
+	 
   		set pUrl = "/api/1"_pUrl
-	 	
-  		$$$TOE(sc, req.Send($zconvert(pMethod,"u"), pUrl))
- 		set json = req.HttpResponse.Data.Read(10000000, .sc)
+	 	$$$TOE(st, req.Send($zconvert(pMethod, "u"), pUrl))
+ 		set json = req.HttpResponse.Data.Read(10000000, .st)
  		
-  		set ^json("wc") = json
-  		$$$TOE(sc, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(json,,.pResponse))
+ 		if (req.HttpResponse.StatusCode '= 200){
+ 			$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_BadStatus", "HTTP Status="_req.HttpResponse.StatusCode))
+ 		}
+ 		
+ 		$$$TOE(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(json,,.pResponse))
  	}
- 	catch ex{
-  		set sc = ex.AsStatus()
+ 	catch (ex){
+  		set st = ex.AsStatus()
  	}
- 	
- 	if $$$ISOK(sc) && ($CLASSNAME(pResponse) = "%ZEN.proxyObject"){
-	 	set sc = $CASE(pResponse.Code, 
+ 
+	if $$$ISOK(st) && ($CLASSNAME(pResponse) = "%ZEN.proxyObject"){
+	 	set st = $CASE(pResponse.Code, 
 	 					401 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_401"),
 	 					403 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_403"),
 	 					404 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_404"),
 	 					409 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_409"),
 	 					500 : ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_ResponseCode_500"),
-	 						: $$$OK)
+	 					200	: $$$OK,
+	 					""	: $$$OK,
+	 						: ##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_UnknownCode", "Code="_pResponse.Code))
  	}
  	
  	quit pResponse
@@ -64,8 +61,8 @@ division [string] : General/Professional
 status: The status of the competition. Valid values are:PreRegistration, Registering, RegistrationClosed, Processing, Closed, Canceled
 location: The city name where the competition takes/took place.</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[from:%String="",to:%String="",modifiedsince:%String="",division:%String="",status:%String="",location:%String="",&sc:%Status=$$$OK]]></FormalSpec>
-<ReturnType>%ZEN.proxyObject</ReturnType>
+<FormalSpec><![CDATA[from:%String="",to:%String="",modifiedsince:%String="",division:%String="",status:%String="",location:%String="",&st:%Status=$$$OK]]></FormalSpec>
+<ReturnType>%ListOfObjects</ReturnType>
 <Implementation><![CDATA[
 	set url = "/competition?format=json"
 	
@@ -75,9 +72,8 @@ location: The city name where the competition takes/took place.</Description>
 	if (division '= "") set url = url_"&division="_division
 	if (status '= "") set url = url_"&status="_status
 	if (location '= "") set url = url_"&location="_location
-	w !,url
-
-	quit ..Call("GET", url, .sc)
+	
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 
@@ -85,12 +81,12 @@ location: The city name where the competition takes/took place.</Description>
 <Description>
 Get one competition by id</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[id:%String,&sc:%Status=$$$OK]]></FormalSpec>
+<FormalSpec><![CDATA[id:%String,&st:%Status=$$$OK]]></FormalSpec>
 <ReturnType>%ZEN.proxyObject</ReturnType>
 <Implementation><![CDATA[
 	set url = "/competition/"_id_"?format=json"
 	
-	quit ..Call("GET", url, .sc)
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 
@@ -98,12 +94,12 @@ Get one competition by id</Description>
 <Description>
 Get competitions in group|tournament</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[id:%String,&sc:%Status=$$$OK]]></FormalSpec>
-<ReturnType>%ZEN.proxyObject</ReturnType>
+<FormalSpec><![CDATA[id:%String,&st:%Status=$$$OK]]></FormalSpec>
+<ReturnType>%ListOfObjects</ReturnType>
 <Implementation><![CDATA[
 	set url = "/competition?format=json&groupId="_id
 	
-	quit ..Call("GET", url, sc)
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 
@@ -111,12 +107,12 @@ Get competitions in group|tournament</Description>
 <Description>
 Get person by id (MIN)</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[id:%String,&sc:%Status=$$$OK]]></FormalSpec>
+<FormalSpec><![CDATA[id:%String,&st:%Status=$$$OK]]></FormalSpec>
 <ReturnType>%ZEN.proxyObject</ReturnType>
 <Implementation><![CDATA[
 	set url = "/person/"_+id_"?format=json"
 	
-	quit ..Call("GET", url, .sc)
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 
@@ -128,8 +124,8 @@ min [int] : list couples where any member's MIN is the filter's value(1xxxxxxx c
 ageGroup [string] : list couples of an age group (Adult, Senior I, Senior II, Youth, ...)
 division [string] : General/Professional</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[min:%String="",name:%String="",ageGroup:%String="",division:%String="",&sc:%Status=$$$OK]]></FormalSpec>
-<ReturnType>%ZEN.proxyObject</ReturnType>
+<FormalSpec><![CDATA[min:%String="",name:%String="",ageGroup:%String="",division:%String="",&st:%Status=$$$OK]]></FormalSpec>
+<ReturnType>%ListOfObjects</ReturnType>
 <Implementation><![CDATA[
 	set url = "/couple?format=json"
 	
@@ -138,7 +134,7 @@ division [string] : General/Professional</Description>
 	if (ageGroup '= "") set url = url_"&ageGroup="_ageGroup
 	if (division '= "") set url = url_"&division="_division
 	
-	quit ..Call("GET", url, .sc)
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 
@@ -146,12 +142,12 @@ division [string] : General/Professional</Description>
 <Description>
 Get couple by id, example id = rls-1802</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[id:%String,&sc:%Status=$$$OK]]></FormalSpec>
+<FormalSpec><![CDATA[id:%String,&st:%Status=$$$OK]]></FormalSpec>
 <ReturnType>%ZEN.proxyObject</ReturnType>
 <Implementation><![CDATA[
 	set url = "/couple/"_id_"?format=json"
 	
-	quit ..Call("GET", url, .sc)
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 
@@ -159,12 +155,12 @@ Get couple by id, example id = rls-1802</Description>
 <Description>
 Get all age groups</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[&sc:%Status=$$$OK]]></FormalSpec>
-<ReturnType>%ZEN.proxyObject</ReturnType>
+<FormalSpec><![CDATA[&st:%Status=$$$OK]]></FormalSpec>
+<ReturnType>%ListOfObjects</ReturnType>
 <Implementation><![CDATA[
 	set url = "/age?format=json"
 	
-	quit ..Call("GET", url, .sc)
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 
@@ -172,12 +168,12 @@ Get all age groups</Description>
 <Description>
 Get all countries</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec><![CDATA[&sc:%Status=$$$OK]]></FormalSpec>
-<ReturnType>%ZEN.proxyObject</ReturnType>
+<FormalSpec><![CDATA[&st:%Status=$$$OK]]></FormalSpec>
+<ReturnType>%ListOfObjects</ReturnType>
 <Implementation><![CDATA[
 	set url = "/country?format=json"
 	
-	quit ..Call("GET", url, .sc)
+	quit ..Call("GET", url, .st)
 ]]></Implementation>
 </Method>
 </Class>

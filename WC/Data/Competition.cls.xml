@@ -155,12 +155,12 @@
 	}
 		
 	set cmp.Tournament = trn
-	set cmp.Country = ##class(Country).%OpenId(data.country.id)
-	set cmp.Discipline = ##class(Discipline).%OpenId(data.discipline.id)
-	set cmp.Division = ##class(Division).%OpenId(data.division.id)
-	set cmp.CStatus = ##class(CompetitionStatus).%OpenId(data.status.id)
-	set cmp.Type = ##class(CompetitionType).%OpenId(data.type.id)
-	set cmp.AgeGroup = ##class(AgeGroup).%OpenId(data.ageGroup.id)
+	set cmp.Country = ##class(Country).GetByName(data.country)
+	set cmp.Discipline = ##class(Discipline).GetByName(data.discipline)
+	set cmp.Division = ##class(Division).GetByName(data.division)
+	set cmp.CStatus = ##class(CompetitionStatus).GetByName(data.status)
+	set cmp.Type = ##class(CompetitionType).GetByName(data.type)
+	set cmp.AgeGroup = ##class(AgeGroup).GetByName(data.ageGroup)
 	set cmp.Location = data.location
 	set cmp.Coefficient = data.coefficient
 		
@@ -188,11 +188,11 @@
 		 FROM WC_Data.Competition
 		 WHERE WDSFId = :wdsfId)
 	
-	if (timeDiff <= syncTimeOutMinutes) && (..%ExistsId(wdsfId) = $$$YES){
+	if (timeDiff < syncTimeOutMinutes) && (..%ExistsId(wdsfId) = $$$YES){
 		quit ..%OpenId(wdsfId,,.st)
 	}
 	
-	set wdsfData = ##class(WC.Wdsf.API).GetCompetitionById(wdsfId)
+	set wdsfData = ##class(WC.Wdsf.API).GetCompetitionById(wdsfId, .st)
 	$$$THROWONERROR(st, st)
 	
 	set cmpData = ##class(%ZEN.proxyObject).%New()
@@ -200,12 +200,12 @@
 	set cmpData.WDSFId = wdsfData.id
 	set cmpData.WDSFGroupId = wdsfData.groupId
 	set cmpData.WDSFEventId = wdsfData.eventId
-	set cmpData.country = ##class(Country).GetByName(wdsfData.country).ConvertToProxyObject()
-	set cmpData.discipline = ##class(Discipline).GetByName(wdsfData.discipline).ConvertToProxyObject()
-	set cmpData.division =  ##class(Division).GetByName(wdsfData.division).ConvertToProxyObject()
-	set cmpData.status = ##class(CompetitionStatus).GetByName(wdsfData.status).ConvertToProxyObject()
-	set cmpData.type = ##class(CompetitionType).GetByName(wdsfData.type).ConvertToProxyObject()
-	set cmpData.ageGroup = ##class(AgeGroup).GetByName(wdsfData.age).ConvertToProxyObject()
+	set cmpData.country = wdsfData.country
+	set cmpData.discipline = wdsfData.discipline
+	set cmpData.division =  wdsfData.division
+	set cmpData.status = wdsfData.status
+	set cmpData.type = wdsfData.type
+	set cmpData.ageGroup = wdsfData.age
 	set cmpData.location = wdsfData.location
 	set cmpData.coefficient = wdsfData.coefficient
 	set cmpData.startDate = $P(wdsfData.date, "T", 1)

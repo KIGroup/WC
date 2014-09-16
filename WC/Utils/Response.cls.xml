@@ -12,7 +12,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 1000
 	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация выполнена.", :"Registration completed.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация выполнена.", 
+														 :"Registration completed.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.participant = participant.ConvertToProxyObject()
 	quit response
@@ -26,7 +27,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 1001
 	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Дерегистрация выполнена.", :"Deregistration completed.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Дерегистрация выполнена.", 
+												         :"Deregistration completed.")
 	quit response
 ]]></Implementation>
 </Method>
@@ -39,7 +41,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 1002
 	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация уже выполнена.", :"Registration has already completed.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация уже выполнена.", 
+														 :"Registration has already completed.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.participant = participant.ConvertToProxyObject()
 	quit response
@@ -53,7 +56,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 1003
 	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация не была выполнена.", :"Registration has not been completed.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация не была выполнена.", 
+														 :"Registration has not been completed.")
 	quit response
 ]]></Implementation>
 </Method>
@@ -65,7 +69,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2000
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Регистратор не найден.", :"Recorder not found.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистратор не найден.", 
+														 :"Recorder not found.")
 	quit response
 ]]></Implementation>
 </Method>
@@ -78,7 +83,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2001
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"У регистратора нет привилегий на запись в турнир.", :"Recorder has no privileges to write into tournament.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"У регистратора нет привилегий на запись в турнир.", 
+														 :"Recorder has no privileges to write into tournament.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.tournament = tournament.ConvertToProxyObject()
 	quit response
@@ -92,7 +98,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2010
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Группа не найдена.", :"Competition not found.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Группа не найдена.", 
+														 :"Competition not found.")
 	quit response
 ]]></Implementation>
 </Method>
@@ -105,7 +112,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2011
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы не позволяет выполнить регистрацию.", :"Competition status does not allow registration.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы (%Status) не позволяет выполнить регистрацию.", :"Competition status (%Status) does not allow registration.")
+	set response.message = $REPLACE(response.message, "%Status", competition.CStatus.Name)
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.competition = competition.ConvertToProxyObject()
 	quit response
@@ -120,7 +128,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2012
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы не позволяет выполнить дерегистрацию.", :"Competition status does not allow deregistration.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы (%Status) не позволяет выполнить дерегистрацию.", :"Competition status (%Status) does not allow deregistration.")
+	set response.message = $REPLACE(response.message, "%Status", competition.CStatus.Name)
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.competition = competition.ConvertToProxyObject()
 	quit response
@@ -150,7 +159,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2014
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация участника в данную группу невозможна. Спортсмен уже принимает участие в группе другого турнира в этот день.", :"Registration of participants in this group is not possible. Athlete is already taking part in the tournament in the group another day.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация участника в данную группу невозможна. Спортсмен (%Number) уже принимает участие в группе другого турнира в этот день.", :"Registration of participants in this group is not possible. Athlete (%Number) is already taking part in the tournament in the group another day.")
+	set response.message = $REPLACE(response.message, "%Number", athlete.Number)
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.conflictCompetitions = conflictCompetitions
 	set response.otherInfo.athlete = athlete.ConvertToProxyObject() 
@@ -190,7 +200,10 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2031
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Спортсмен не допускается к регистрации из-за своего возраста.", :"Athlete is not allowed to register because of his age.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Спортсмен не допускается к регистрации в группу (%Competition.AgeGroup) из-за своего возраста (%Athlete.AgeGroup).", 
+														 :"Athlete is not allowed to register in competition (%Competition.AgeGroup) because of his age (%Athlete.AgeGroup).")
+	set response.message = $REPLACE(response.message, "%Competition.AgeGroup", competition.AgeGroup.Name)
+	set response.message = $REPLACE(response.message, "%Athlete.AgeGroup", athlete.AgeGroup.Name)
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.athlete = athlete.ConvertToProxyObject()
 	set response.otherInfo.competition = competition.ConvertToProxyObject()
@@ -252,7 +265,10 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2043
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не допускается к регистрации из-за своей возрастной группы.", :"Couple is not allowed to register because of their age group.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не допускается к регистрации в группу (%Competition.AgeGroup) из-за своей возрастной группы (%Couple.AgeGroup).", 
+														 :"Couple is not allowed to register in competition (%Competition.AgeGroup) because of their age group (%Couple.AgeGroup).")
+	set response.message = $REPLACE(response.message, "%Competition.AgeGroup", competition.AgeGroup.Name)
+	set response.message = $REPLACE(response.message, "%Couple.AgeGroup", couple.AgeGroup.Name)													 
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.competition = competition.ConvertToProxyObject()
 	set response.otherInfo.couple = couple.ConvertToProxyObject()
@@ -268,7 +284,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2044
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Статус группы не 'Active'.", :"Couple status is not 'Active'.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Статус пары не 'Active'.", 
+														 :"Couple status is not 'Active'.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.couple = couple.ConvertToProxyObject()
 	quit response
@@ -283,7 +300,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2050
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Синхронизация данных спортсмена с WDSF завершилась ошибкой.", :"Synchronization athlete with WDSF failed.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Синхронизация данных спортсмена с WDSF завершилась ошибкой.", 
+														 :"Synchronization athlete with WDSF failed.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.number = number
 	set response.otherInfo.errorText = errorText
@@ -299,7 +317,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2060
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не зарегистрирована, не удалось создать запись.", :"Couple is not registered, it was not possible to create an entry.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не зарегистрирована, не удалось создать запись.", 
+														 :"Couple is not registered, it was not possible to create an entry.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.competition = competition.ConvertToProxyObject()
 	set response.otherInfo.couple = couple.ConvertToProxyObject()
@@ -316,7 +335,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2061
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Участник не зарегистрирован, не удалось создать запись.", :"Participant is not registered, it was not possible to create an entry.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Участник не зарегистрирован, не удалось создать запись.", 
+														 :"Participant is not registered, it was not possible to create an entry.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.competition = competition.ConvertToProxyObject()
 	set response.otherInfo.athlete = athlete.ConvertToProxyObject()
@@ -333,7 +353,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2062
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru": "Не удалось удалить регистрацию пары.", :"Failed to delete couple registration.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Не удалось удалить регистрацию пары.", 
+														 :"Failed to delete couple registration.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.participant = participant.ConvertToProxyObject()
 	set response.otherInfo.errorText = errorText
@@ -349,7 +370,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2063
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Не удалось удалить регистрацию участника.", :"Failed to delete athlete registration.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Не удалось удалить регистрацию участника.", 
+														 :"Failed to delete athlete registration.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.participant = participant.ConvertToProxyObject()
 	set response.otherInfo.errorText = errorText
@@ -364,7 +386,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2064
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Участник не найден.", :"Participant not found.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Участник не найден.", 
+														 :"Participant not found.")
 	quit response
 ]]></Implementation>
 </Method>
@@ -376,7 +399,8 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2500
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Недопустимый формат даты.", :"Invalid date format.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Недопустимый формат даты.", 
+														 :"Invalid date format.")
 	quit response
 ]]></Implementation>
 </Method>
@@ -388,7 +412,22 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2501
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Дата и время введены некорректно.", :"Date and time entered incorrectly.")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Дата и время введены некорректно.", 
+														 :"Date and time entered incorrectly.")
+	quit response
+]]></Implementation>
+</Method>
+
+<Method name="NotArray">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>arrayName:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2502
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Передан не массив '"_arrayName_"'.", 
+														 :"This is not array '"_arrayName_"'.")
 	quit response
 ]]></Implementation>
 </Method>

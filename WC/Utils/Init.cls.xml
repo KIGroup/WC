@@ -77,14 +77,14 @@ do ##class(WC.Utils.Init).Initialize()</Description>
 
 <Method name="LoadCompetitions">
 <ClassMethod>1</ClassMethod>
-<FormalSpec>from,to</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	set st = $$$OK
 	
 	try{
 		TSTART
-		set wdsfData = ##class(WC.Wdsf.API).GetCompetitions("2014-08-01", "2015-01-01",,,,,.st)
+		
+		set wdsfData = ##class(WC.Wdsf.API).GetCompetitions("2014/08/01", "2014/10/01",,,,,.st)
 		$$$THROWONERROR(st, st)
 		w !,"Count = "_wdsfData.Count()
 		for i=1:1:wdsfData.Count(){
@@ -97,6 +97,29 @@ do ##class(WC.Utils.Init).Initialize()</Description>
 	catch(ex){
 		TROLLBACK
 		set st = ex.AsStatus()
+		do $SYSTEM.OBJ.Dump(st)
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="Test">
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		for i=1:1:50{
+			w !, i
+			set data = ##class(WC.Wdsf.API).GetCompetitionById("44599", .st)
+			$$$THROWONERROR(st, st)
+		}
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+		do $SYSTEM.OBJ.DisplayError(st)
 	}
 	
 	quit st

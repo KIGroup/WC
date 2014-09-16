@@ -89,8 +89,8 @@
 	set person.Name = data.name
 	set person.Sex = data.sex
 	set person.Nationality = data.nationality
-	set person.Country = ##class(Country).%OpenId(data.country.id)
-	set person.AgeGroup = ##class(AgeGroup).%OpenId(data.ageGroup.id)
+	set person.Country = ##class(Country).GetByName(data.country)
+	set person.AgeGroup = ##class(AgeGroup).GetByName(data.ageGroup)
 	set person.LastSyncWDSF = data.lastSyncWDSF
 	
 	set st = person.%Save()
@@ -113,7 +113,7 @@
 		 WHERE WDSFId = :wdsfId)
 	
 	// If data of our person not so old, then open and return
-	if (timeDiff <= syncTimeOutMinutes) && (..%ExistsId(wdsfId) = $$$YES){
+	if (timeDiff < syncTimeOutMinutes) && (..%ExistsId(wdsfId) = $$$YES){
 		quit ..%OpenId(wdsfId,,.st)
 	}
 	
@@ -127,8 +127,8 @@
 	set personData.name = wdsfData.name
 	set personData.sex = wdsfData.sex
 	set personData.nationality = wdsfData.nationality
-	set personData.country = ##class(Country).GetByName(wdsfData.country).ConvertToProxyObject()
-	set personData.ageGroup = ##class(AgeGroup).NameIdxOpen(wdsfData.ageGroup).ConvertToProxyObject()
+	set personData.country = wdsfData.country
+	set personData.ageGroup = wdsfData.ageGroup
 	set personData.lastSyncWDSF = $ZDT($ZTS, 3)
 	
 	quit ..Save(personData, .st)

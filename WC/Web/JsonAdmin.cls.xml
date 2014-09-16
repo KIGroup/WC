@@ -14,60 +14,109 @@ Registration / Deregistration                                                   
 Create participant for competition
 Method="POST" Url="/registration"</Description>
 <ClassMethod>1</ClassMethod>
-<FormalSpec>data:%ZEN.proxyObject=""</FormalSpec>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	try{
-		// For test
-		if '$DATA(%response) set %response = ##class(%ZEN.proxyObject).%New()
-		if '$ISOBJECT(data) $$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
+	set st = $$$OK
+	set proxy = ##class(%ZEN.proxyObject).%New()
 	
+	try{
+		$$$THROWONERROR(st, ##class(%ZEN.Auxiliary.jsonProvider).%ConvertJSONToObject(%request.Content,,.data, 1))
+		
+		if ($FIND($CLASSNAME(data.competitions), "ListOf") = 0) || (data.competitions.Count() = 0){
+			set %response.Status = 400
+			return ##class(WC.Utils.Response).NotArray("competitions").%ToJSON()
+		}
+		
+		set responsesList = ##class(%ListOfObjects).%New()
+		set ^ttt = data.competitions.Count()
+		for i=1:1:data.competitions.Count(){
+			set stReg = ..RegistrationOne(data.competitions.GetAt(i), data.manNumber, data.womanNumber, .response)
+			
+			set result = ##class(%ZEN.proxyObject).%New()
+			set result.request = ##class(%ZEN.proxyObject).%New()
+			set result.request.competitionId = data.competitions.GetAt(i)
+			set result.request.manNumber = data.manNumber
+			set result.request.womanNumber = data.womanNumber
+			set result.response = response
+			do responsesList.Insert(result)		
+		}
+		
+		set proxy.status = $$$OK
+		set proxy.results = responsesList
+	}
+	catch(ex){
+		set %response.Status = 400
+		set proxy.status = $SYSTEM.Status.GetOneErrorText(ex.AsStatus())
+	}	
+	
+	quit proxy.%ToJSON()
+]]></Implementation>
+</Method>
+
+<Method name="RegistrationOne">
+<Description>
+Create participant for competition
+Method="POST" Url="/registration"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[competitionId:%String,manNumber:%String,womanNumber:%String,&response]]></FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+		
+	try{
+		
 		// Check for registration (couple|solo)
-		set participant = ##class(WC.Data.Participant).GetByNymbers(data.competitionId, data.manNumber, data.womanNumber)
+		set participant = ##class(WC.Data.Participant).GetByNymbers(competitionId, manNumber, womanNumber)
 		if $ISOBJECT(participant){
-			return ##class(WC.Utils.Response).RegistrationExists(participant).%ToJSON()
+			set response = ##class(WC.Utils.Response).RegistrationExists(participant)
+			return $$$OK
 		}
 		
 		// Recorder. Verify existence.
 		set recorder = ##class(WC.Data.Recorder).GetCurrentRecorder(.st)
 		if $$$ISERR(st)	{
-			set %response.Status = "400"
-			return ##class(WC.Utils.Response).RecorderNotFound().%ToJSON()
+			set response = ##class(WC.Utils.Response).RecorderNotFound()
+			return st
 		}
 		
 		// Competition. Verify existence.
-		set competition = ##class(WC.Data.Competition).%OpenId(data.competitionId,,.st)
+		set competition = ##class(WC.Data.Competition).%OpenId(competitionId,,.st)
 		if $$$ISERR(st) {
-			set %response.Status = "400"
-			return ##class(WC.Utils.Response).CompetitionNotFound().%ToJSON()
+			set response = ##class(WC.Utils.Response).CompetitionNotFound()
+			return st
 		}
 		
 		// Competition. Verify status
 		if (competition.CStatus.Name '= "Registering") {
-			set %response.Status = "400"
-			return ##class(WC.Utils.Response).CompetitionStatusNotForRegistration(competition).%ToJSON()
+			set response = ##class(WC.Utils.Response).CompetitionStatusNotForRegistration(competition)
+			return ##class(WC.Utils.Msg).GetErrorStatus("error_CompetitionStatusNotForRegistration")
 		}
 		
 		// Check recorder privileges
-		if $$$ISERR(##class(WC.Data.Recorder).CheckPrivileges(recorder.%Id(), competition.Tournament.%Id())) {
-			set %response.Status = "400"
-			return ##class(WC.Utils.Response).RecorderNoPrivileges(competition.Tournament).%ToJSON()
+		set st = ##class(WC.Data.Recorder).CheckPrivileges(recorder.%Id(), competition.Tournament.%Id())
+		if $$$ISERR(st) {
+			set response = ##class(WC.Utils.Response).RecorderNoPrivileges(competition.Tournament)
+			return st
 		}
 		
 		// Find conflict competition(tournament) by day
-		set cmpListConflictMan = ##class(WC.Data.Person).GetConflictCompetitions(data.manNumber, data.competitionId, .cfSt1)
+		set cmpListConflictMan = ##class(WC.Data.Person).GetConflictCompetitions(manNumber, competitionId, .cfSt1)
 							 						   		
 		if (cmpListConflictMan.Count() > 0){
-			set %response.Status = "400"
-			return ##class(WC.Utils.Response).CompetitionConflictSameDayRegistration(cmpListConflictMan, ##class(WC.Data.Person).%OpenId(data.manNumber)).%ToJSON()
+			set response = ##class(WC.Utils.Response).CompetitionConflictSameDayRegistration(cmpListConflictMan, ##class(WC.Data.Person).%OpenId(manNumber))
+			return ##class(WC.Utils.Msg).GetErrorStatus("error_ManCompetitionConflictSameDayRegistration")
 		}
 		else{
-			set cmpListConflictWoman = ##class(WC.Data.Person).GetConflictCompetitions(data.womanNumber, data.competitionId, .cfSt2)
+			set cmpListConflictWoman = ##class(WC.Data.Person).GetConflictCompetitions(womanNumber, competitionId, .cfSt2)
 			if (cmpListConflictWoman.Count() > 0){
-				set %response.Status = "400"
-				return ##class(WC.Utils.Response).CompetitionConflictSameDayRegistration(cmpListConflictWoman, ##class(WC.Data.Person).%OpenId(data.womanNumber)).%ToJSON()
+				set response = ##class(WC.Utils.Response).CompetitionConflictSameDayRegistration(cmpListConflictWoman, ##class(WC.Data.Person).%OpenId(womanNumber))
+				return ##class(WC.Utils.Msg).GetErrorStatus("error_WomanCompetitionConflictSameDayRegistration")
 			}
 		}
+		
+		set numbers = ##class(%ZEN.proxyObject).%New()
+		set numbers.manNumber = manNumber
+		set numbers.womanNumber = womanNumber
 		
 		// Check competition type (Solo|Couple)
 		set participantClassName = ""
@@ -75,47 +124,47 @@ Method="POST" Url="/registration"</Description>
 			set participantClassName = "WC.Data.ParticipantSingle"
 			
 			// Only one number needed, not two
-			if (data.manNumber '= "") && (data.womanNumber '= ""){
-				set %response.Status = "400"
-				return ##class(WC.Utils.Response).CompetitionIsSoloForOneAthlete(competition).%ToJSON()
+			if (manNumber '= "") && (womanNumber '= ""){
+				set response = ##class(WC.Utils.Response).CompetitionIsSoloForOneAthlete(competition)
+				return ##class(WC.Utils.Msg).GetErrorStatus("error_CompetitionIsSoloForOneAthlete")
 			}
 			
 			// Only one number needed
-			if (data.manNumber = "") && (data.womanNumber = ""){
-				set %response.Status = "400"
-				return ##class(WC.Utils.Response).AthleteEmptyNumber().%ToJSON()
+			if (manNumber = "") && (womanNumber = ""){
+				set response = ##class(WC.Utils.Response).AthleteEmptyNumber()
+				return ##class(WC.Utils.Msg).GetErrorStatus("error_AthleteEmptyNumber")
 			}
 			
-			set data.number = $SELECT(data.manNumber = ""   : data.womanNumber, 
-									  data.womanNumber = "" : data.manNumber, 
-									  					  1 : "") 
+			set numbers.number = $SELECT(manNumber = ""   : womanNumber, 
+							    		 womanNumber = "" : manNumber, 
+									  	      		    1 : "") 
 		} 
 		else{
 			set participantClassName = "WC.Data.ParticipantCouple"
 			
 			// Two numbers is needed
-			if (data.manNumber = "") || (data.womanNumber = ""){
-				set %response.Status = "400"
-				return ##class(WC.Utils.Response).AthleteEmptyNumber().%ToJSON()
+			if (manNumber = "") || (womanNumber = ""){
+				set response = ##class(WC.Utils.Response).AthleteEmptyNumber()
+				return ##class(WC.Utils.Msg).GetErrorStatus("error_AthleteEmptyNumber")
 			}	
 		}
 		
-		do ##class(WC.Utils.Journal).Create("Registration start", "Web.JsonAdmin.Registration()", "Before creating participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_data.manNumber_"; data.womanNumber="_data.womanNumber)
+		do ##class(WC.Utils.Journal).Create("Registration start", "Web.JsonAdmin.Registration()", "Before creating participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_manNumber_"; data.womanNumber="_womanNumber)
 		
 		TSTART
 		
-		set participant = $CLASSMETHOD(participantClassName, "Create", recorder, competition, data, .response, .st)
+		set participant = $CLASSMETHOD(participantClassName, "Create", recorder, competition, numbers, .response, .st)
 		
 		if $$$ISERR(st) {
 			TROLLBACK
-			set %response.Status = "400"
-			return response.%ToJSON()
+			return st
 		}
 		
 		TCOMMIT
 		
-		do ##class(WC.Utils.Journal).Create("Registration end", "Web.JsonAdmin.Registration()", "After creating participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_data.manNumber_"; data.womanNumber="_data.womanNumber)
-		do ##class(WC.Utils.Response).RegistrationCompleted(participant).%ToJSON()	
+		do ##class(WC.Utils.Journal).Create("Registration end", "Web.JsonAdmin.Registration()", "After creating participant: Recorder="_recorder.Login_"; CompetitionId="_competition.%Id()_"; data.manNumber="_manNumber_"; data.womanNumber="_womanNumber)
+		set response = ##class(WC.Utils.Response).RegistrationCompleted(participant)
+		return $$$OK 	
 	}
 	catch(ex){
 		if ($TLEVEL '= 0){
@@ -444,7 +493,7 @@ Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014
 		}
 		
 		if (country '= ""){
-			set where = where_"Country LIKE '%"_..ParseParameter(country)_"%' AND "
+			set where = where_"Country->Name LIKE '%"_..ParseParameter(country)_"%' AND "
 		}
 		
 		if (modifiedsince '= ""){
@@ -482,6 +531,7 @@ Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014
 				  where_
 				  "ORDER BY StartDate, WDSFLastModified"
 		
+		set ^temp("cmpSql") = sql
 		set statement = ##class(%SQL.Statement).%New()	
 		$$$THROWONERROR(st, statement.%Prepare(sql))		
 		set rs = statement.%Execute()
@@ -672,7 +722,7 @@ Method="GET" Url="/couple/:id"</Description>
 	set st = $$$OK
 	
 	try{
-		set couple = ##class(WC.Data.Couple).SyncWDSF(id, 10000, .st)
+		set couple = ##class(WC.Data.Couple).SyncWDSF(id, 0, .st)
 		if $$$ISERR(st)	{
 			set %response.Status = "400"
 			return ##class(WC.Utils.Response).CoupleSyncFailed(id, $SYSTEM.Status.GetErrorText(st)).%ToJSON()
@@ -798,7 +848,7 @@ Method="GET" Url="/person/:id"</Description>
 	set st = $$$OK
 	
 	try{
-		set pr = ##class(WC.Data.Person).SyncWDSF(id, 10000, .st)
+		set pr = ##class(WC.Data.Person).SyncWDSF(id, 0, .st)
 		if $$$ISERR(st) {
 			set %response.Status = "400"
 			return ##class(WC.Utils.Response).PersonSyncFailed(id, $SYSTEM.Status.GetErrorText(st)).%ToJSON()

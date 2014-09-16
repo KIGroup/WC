@@ -57,7 +57,7 @@
 	<body>
 
         <div class="container-fluid">
-            <form name="loginForm" class="form-signin" method="post" action="/csp/wdsfcontroller/wc/index.csp">
+            <form name="loginForm" class="form-signin" method="post" action="#(##class(WC.Data.Settings).GetWebAppNamespace()_"/wc/index.csp")#">
                 <p id="caption">WDSF Controller</p>
                 <input name="CacheLogin" value="1" type="hidden">
                 <input id="CacheUserName" type="text" class="input-block-level" name="CacheUserName" placeholder="Login" value="#($GET(%request.Data("CacheUserName", 1)))#" required>

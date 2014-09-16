@@ -46,13 +46,13 @@ do ##class(WC.Data.CompetitionStatus).Import()</Description>
 	do ..%KillExtent()
 	set statuses = ##class(%ListOfDataTypes).%New()
 	
-	do statuses.Insert("PreRegsitration")
+	do statuses.Insert("PreRegistration")
 	do statuses.Insert("Registering")
 	do statuses.Insert("RegistrationClosed")
 	do statuses.Insert("InProgress")
 	do statuses.Insert("Processing")
 	do statuses.Insert("Closed")
-	do statuses.Insert("Cancelled")
+	do statuses.Insert("Canceled")
 	do statuses.Insert("Unknown")
 	
 	for i=1:1:statuses.Count(){

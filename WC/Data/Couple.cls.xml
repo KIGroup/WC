@@ -85,9 +85,9 @@
 	
 	set couple.Man = ##class(Person).%OpenId(data.man.id)
 	set couple.Woman = ##class(Person).%OpenId(data.woman.id)
-	set couple.CStatus = ##class(CoupleStatus).%OpenId(data.status.id)
-	set couple.Division = ##class(Division).%OpenId(data.division.id)
-	set couple.AgeGroup = ##class(AgeGroup).%OpenId(data.ageGroup.id)
+	set couple.CStatus = ##class(CoupleStatus).GetByName(data.status)
+	set couple.Division = ##class(Division).GetByName(data.division)
+	set couple.AgeGroup = ##class(AgeGroup).GetByName(data.ageGroup)
 	set couple.LastSyncWDSF = data.lastSyncWDSF
 	
 	set st = couple.%Save()
@@ -114,16 +114,16 @@
 	}
 	
 	set wdsfData = ##class(WC.Wdsf.API).GetCouple(wdsfId, .st)
-	quit:$$$ISERR(st) st
-	
+	quit:$$$ISERR(st) $$$NULLOREF
+
 	// Synchronize couple athletes 
 	set persons = ##class(%ListOfObjects).%New()
 	for i=1:1:wdsfData.link.Count(){
 		set link = wdsfData.link.GetAt(i).href
-		
 		if ($FIND(link, "/person/") '= 0){
 			set min = $P(link, "/person/", 2)
-			do persons.Insert(##class(Person).SyncWDSF(min, 60, .st))			
+			do persons.Insert(##class(Person).SyncWDSF(min, 0, .st))
+			return:$$$ISERR(st) $$$NULLOREF
 		}
 	}
 	
@@ -143,14 +143,14 @@
 	set coupleData.WDSFId = wdsfData.id
 	set coupleData.man = manProxy
 	set coupleData.woman = womanProxy
-	set coupleData.status = ##class(CoupleStatus).GetByName(wdsfData.status).ConvertToProxyObject()
-	set coupleData.division = ##class(Division).GetByName(wdsfData.division).ConvertToProxyObject()
+	set coupleData.status = wdsfData.status
+	set coupleData.division = wdsfData.division
 	set ageGroup = ##class(AgeGroup).GetByName(wdsfData.age)
 	if '$ISOBJECT(ageGroup){
 		set ageGroup = ##class(Person).%OpenId(coupleData.man.id).AgeGroup
 	}
 	
-	set coupleData.ageGroup = ageGroup.ConvertToProxyObject()
+	set coupleData.ageGroup = ageGroup.Name
 	set coupleData.lastSyncWDSF = $ZDT($ZTS, 3)
 	
 	quit ..Save(coupleData, .st)
@@ -181,7 +181,7 @@
 <Implementation><![CDATA[
 	set st = $$$OK
 	
-	set couples = ##class(WC.Wdsf.API).GetCouples(manId,,,,.st)
+	set couples = ##class(WC.Wdsf.API).GetCouples(manId,,,, .st)
 	quit:$$$ISERR(st) ""
 	
 	for i=1:1:couples.Count(){
