@@ -38,7 +38,7 @@
 
 	set participant = $$$NULLOREF
 
-	set athlete = ##class(WC.Data.Person).SyncWDSF(data.number, 1, .st)
+	set athlete = ##class(WC.Data.Person).SyncWDSF(data.number, 10000, .st)
 	if $$$ISERR(st)	{
 		set response = ##class(WC.Utils.Response).PersonSyncFailed(data.number, $SYSTEM.Status.GetErrorText(st))
 		quit participant

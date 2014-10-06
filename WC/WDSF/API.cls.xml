@@ -116,6 +116,21 @@ Get person by id (MIN)</Description>
 ]]></Implementation>
 </Method>
 
+<Method name="GetPersons">
+<Description>
+All persons by filter</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec><![CDATA[name:%String="",&st:%Status=$$$OK]]></FormalSpec>
+<ReturnType>%ListOfObjects</ReturnType>
+<Implementation><![CDATA[
+	set url = "/person?format=json"
+	
+	if (name '= "") set url = url_"&name="_name
+	
+	quit ..Call("GET", url, .st)
+]]></Implementation>
+</Method>
+
 <Method name="GetCouples">
 <Description>
 Get couples, use query parameters

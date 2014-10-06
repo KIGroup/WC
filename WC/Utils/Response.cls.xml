@@ -14,8 +14,11 @@
 	set response.status = $CASE($$$SessionLanguage, "ru":"Успех", :"Success")
 	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация выполнена.", 
 														 :"Registration completed.")
+	
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.participant = participant.ConvertToProxyObject()
+	set response.otherInfo.competition = response.otherInfo.participant.competition
+	do response.otherInfo.participant.competition.%Clear()
 	quit response
 ]]></Implementation>
 </Method>
@@ -45,6 +48,9 @@
 														 :"Registration has already completed.")
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.participant = participant.ConvertToProxyObject()
+	set response.otherInfo.competition = response.otherInfo.participant.competition
+	do response.otherInfo.participant.competition.%Clear()
+
 	quit response
 ]]></Implementation>
 </Method>
@@ -159,8 +165,9 @@
 	set response = ##class(%ZEN.proxyObject).%New()
 	set response.code = 2014
 	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
-	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация участника в данную группу невозможна. Спортсмен (%Number) уже принимает участие в группе другого турнира в этот день.", :"Registration of participants in this group is not possible. Athlete (%Number) is already taking part in the tournament in the group another day.")
-	set response.message = $REPLACE(response.message, "%Number", athlete.Number)
+	set response.message = $CASE($$$SessionLanguage, "ru":"Регистрация участника в данную группу невозможна. Спортсмен (%FullName) уже принимает участие в группе другого турнира в этот день.", 
+														 :"Registration of participants in this group is not possible. Athlete (%FullName) is already taking part in the tournament in the group another day.")
+	set response.message = $REPLACE(response.message, "%FullName", athlete.Surname_" "_athlete.Name)
 	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
 	set response.otherInfo.conflictCompetitions = conflictCompetitions
 	set response.otherInfo.athlete = athlete.ConvertToProxyObject() 

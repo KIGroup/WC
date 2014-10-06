@@ -122,7 +122,7 @@
 		set link = wdsfData.link.GetAt(i).href
 		if ($FIND(link, "/person/") '= 0){
 			set min = $P(link, "/person/", 2)
-			do persons.Insert(##class(Person).SyncWDSF(min, 0, .st))
+			do persons.Insert(##class(Person).SyncWDSF(min, syncTimeOutMinutes, .st))
 			return:$$$ISERR(st) $$$NULLOREF
 		}
 	}

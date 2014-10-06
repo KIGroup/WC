@@ -57,7 +57,7 @@
 	kill coupleOld
 	
 	// Synchronize couple from WDSF DB (or not) 
-	set couple = ##class(Couple).SyncWDSF(wdsfCoupleId, 1, .st)
+	set couple = ##class(Couple).SyncWDSF(wdsfCoupleId, 10000, .st)
 	if $$$ISERR(st)	{
 		set response = ##class(WC.Utils.Response).CoupleSyncFailed(wdsfCoupleId, $SYSTEM.Status.GetErrorText(st))
 		quit participant

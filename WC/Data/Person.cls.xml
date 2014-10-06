@@ -195,6 +195,51 @@
 ]]></Implementation>
 </Method>
 
+<Method name="SyncWDSFByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>name:%String,maxCount:%Integer=10</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set wdsfPersons = ##class(WC.Wdsf.API).GetPersons(name, .st)
+		if (wdsfPersons.Count() < maxCount){
+			set maxCount = wdsfPersons.Count()
+		}
+		
+		for i=1:1:maxCount{
+			set activeCoupleId = wdsfPersons.GetAt(i).activeCoupleId
+			
+			TSTART
+
+			if (activeCoupleId '= ""){
+				do ##class(WC.Data.Couple).SyncWDSF(activeCoupleId, 50000, .st)
+			}
+			else{
+				do ##class(WC.Data.Person).SyncWDSF(wdsfPersons.GetAt(i).id, 50000, .st)
+			}
+			
+			if $$$ISOK(st){
+				TCOMMIT
+			}
+			else{
+				TROLLBACK
+			}
+		}
+	}
+	catch(ex){
+		if $TLEVEL > 0{
+			TROLLBACK
+		}
+		
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
 <UDLText name="T">
 <Content><![CDATA[
 /*

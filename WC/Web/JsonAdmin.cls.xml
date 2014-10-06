@@ -28,7 +28,7 @@ Method="POST" Url="/registration"</Description>
 		}
 		
 		set responsesList = ##class(%ListOfObjects).%New()
-		set ^ttt = data.competitions.Count()
+		
 		for i=1:1:data.competitions.Count(){
 			set stReg = ..RegistrationOne(data.competitions.GetAt(i), data.manNumber, data.womanNumber, .response)
 			
@@ -722,7 +722,7 @@ Method="GET" Url="/couple/:id"</Description>
 	set st = $$$OK
 	
 	try{
-		set couple = ##class(WC.Data.Couple).SyncWDSF(id, 0, .st)
+		set couple = ##class(WC.Data.Couple).SyncWDSF(id, 10000, .st)
 		if $$$ISERR(st)	{
 			set %response.Status = "400"
 			return ##class(WC.Utils.Response).CoupleSyncFailed(id, $SYSTEM.Status.GetErrorText(st)).%ToJSON()
@@ -848,7 +848,7 @@ Method="GET" Url="/person/:id"</Description>
 	set st = $$$OK
 	
 	try{
-		set pr = ##class(WC.Data.Person).SyncWDSF(id, 0, .st)
+		set pr = ##class(WC.Data.Person).SyncWDSF(id, 10000, .st)
 		if $$$ISERR(st) {
 			set %response.Status = "400"
 			return ##class(WC.Utils.Response).PersonSyncFailed(id, $SYSTEM.Status.GetErrorText(st)).%ToJSON()
@@ -872,13 +872,31 @@ Method="GET" Url="/person". Filter example params: ?name=Ivanov"</Description>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	set st = $$$OK
-	
+
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.persons = ##class(%ListOfObjects).%New()
+			
 	try{
 		set name = ..ParseParameter($GET(%request.Data("name", 1)))
+		set sex = ..ParseParameter($GET(%request.Data("sex", 1)))
 		
 		set where = ""
 		if (name '= ""){
-			set where = "(Surname LIKE '%"_name_"%' OR Name Like '%"_name_"%') AND "
+			do ##class(WC.Data.Person).SyncWDSFByName(name)
+			
+			if (name [ ","){
+				set where = ""_
+				"((Surname = '"_$P(name, ",", 1)_"' AND Name = '"_$P(name, ",", 2)_"')"_
+				" OR "_
+				"(Surname = '"_$P(name, ",", 2)_"' AND Name = '"_$P(name, ",", 1)_"')) AND "
+			}
+			else{
+				set where = "(Surname LIKE '%"_name_"%' OR Name Like '%"_name_"%') AND "
+			}
+		}
+		
+		if (sex '= ""){
+			set where = where_"Sex='"_sex_"' AND "
 		}
 		
 		if (where '= ""){
@@ -894,9 +912,7 @@ Method="GET" Url="/person". Filter example params: ?name=Ivanov"</Description>
 		set statement = ##class(%SQL.Statement).%New()	
 		$$$THROWONERROR(st, statement.%Prepare(sql))		
 		set rs = statement.%Execute()
-
-		set proxy = ##class(%ZEN.proxyObject).%New()
-		set proxy.persons = ##class(%ListOfObjects).%New()
+		
 		while (rs.%Next() '= 0){
 			do proxy.persons.Insert(##class(WC.Data.Person).%OpenId(rs.%GetData(1)).ConvertToProxyObject())
 		}
