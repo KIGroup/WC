@@ -740,7 +740,7 @@ Method="GET" Url="/couple/:id"</Description>
 
 <Method name="GetCoupleByNumbers">
 <Description><![CDATA[
-Get one couple by Id
+Get one couple by athlete numbers
 Method="GET" Url="/couple?manNumber=1111&womanNumber=22222"]]></Description>
 <ClassMethod>1</ClassMethod>
 <FormalSpec>manNumber:%String,womanNumber:%String</FormalSpec>
@@ -777,6 +777,82 @@ Method="GET" Url="/couple?manNumber=1111&womanNumber=22222"]]></Description>
 ]]></Implementation>
 </Method>
 
+<Method name="GetCoupleByName">
+<Description><![CDATA[
+Get one couple by athlete numbers
+Method="GET" Url="/couple?manFullName=1111&womanFullName=22222"]]></Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>manFullName:%String,womanFullName:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		TSTART
+		
+		set (couple, wdsfCoupleId, SQLCODE) = $$$NULLOREF
+		
+		set manSurname = $P(manFullName, ",", 1)
+		set manName = $P(manFullName, ",", 2)
+		set womanSurname = $P(womanFullName, ",", 1)
+		set womanName = $P(womanFullName, ",", 2)
+		
+		
+		&sql(SELECT ID INTO :wdsfCoupleId
+			 FROM WC_Data.Couple 
+			 WHERE %UPPER(Man->Surname) = %UPPER(TRIM(BOTH ' ' FROM :manSurname)) AND
+			  	   %UPPER(Man->Name) = %UPPER(TRIM(BOTH ' ' FROM :manName)) AND
+			  	   %UPPER(Woman->Surname) = %UPPER(TRIM(BOTH ' ' FROM :womanSurname)) AND
+			 	   %UPPER(Woman->Name) = %UPPER(TRIM(BOTH ' ' FROM :womanName)))
+		
+		if (SQLCODE '= 0){
+			w !,manFullName
+			set couples = ##class(WC.Wdsf.API).GetCouples("", manFullName,,,.st)
+			set loadingCount = 0
+			for i=1:1:couples.Count(){
+				set coupleWDSF = couples.GetAt(i)
+				w !, "i="_i_". Couple name = "_coupleWDSF.name
+				
+				if ($P(coupleWDSF.name, " - ", 1) [ manSurname) && ($P(coupleWDSF.name, " - ", 2) [ womanSurname){
+					set couple = ##class(WC.Data.Couple).SyncWDSF(coupleWDSF.id, 40000, .st)
+					$$$THROWONERROR(st, st)
+					
+					set loadingCount = loadingCount + 1 
+					
+					if ($ZCVT(couple.Woman.Surname, "U") = $ZCVT(womanSurname, "U")){
+						set wdsfCoupleId = couple.%Id()	
+						quit
+					}
+					
+					quit:(loadingCount >= 10)
+				}
+			}	
+		}
+		
+		set couple = ##class(WC.Data.Couple).SyncWDSF(wdsfCoupleId, 40000, .st)
+		
+		if $$$ISOK(st){
+			do couple.ConvertToProxyObject().%ToJSON()
+			TCOMMIT
+		}
+		else{
+			TROLLBACK
+			//set %response.Status = "400"
+			return ##class(WC.Utils.Response).CoupleNotFoundInWDSFByName($SYSTEM.Status.GetErrorText(st)).%ToJSON()	
+		}
+	}
+	catch(ex){
+		if $TLEVEL > 0{
+			TROLLBACK
+		}
+		
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
 <Method name="GetCouples">
 <Description>
 Get list of couples by filter params
@@ -791,6 +867,12 @@ Method="GET" Url="/couple". Filter example params: ?min=1000232"</Description>
 		set womanNumber = ..ParseParameter($GET(%request.Data("womanNumber", 1)))
 		if (manNumber '=  "") && (womanNumber '=  ""){
 			return ..GetCoupleByNumbers(manNumber, womanNumber)
+		}
+		
+		set manFullName = ..ParseParameter($GET(%request.Data("manFullName", 1)))
+		set womanFullName = ..ParseParameter($GET(%request.Data("womanFullName", 1)))
+		if (manFullName '=  "") && (womanFullName '=  ""){
+			return ..GetCoupleByName(manFullName, womanFullName)
 		}
 		
 		set min = ..ParseParameter($GET(%request.Data("min", 1)))

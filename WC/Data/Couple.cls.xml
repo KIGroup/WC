@@ -100,6 +100,11 @@
 <FormalSpec><![CDATA[wdsfId:%String,syncTimeOutMinutes:%Integer=60,&st]]></FormalSpec>
 <ReturnType>Couple</ReturnType>
 <Implementation><![CDATA[
+	if (wdsfId = ""){
+		set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Couple_EmptyId")
+		quit $$$NULLOREF
+	}
+	
 	set st = $$$OK
 	set currTS = $ZDT($ZTS, 3)
 	set timeDiff = ""

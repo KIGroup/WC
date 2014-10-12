@@ -248,6 +248,21 @@
 ]]></Implementation>
 </Method>
 
+<Method name="CoupleNotFoundInWDSFByName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>errorText:%String</FormalSpec>
+<ReturnType>%ZEN.proxyObject</ReturnType>
+<Implementation><![CDATA[
+	set response = ##class(%ZEN.proxyObject).%New()
+	set response.code = 2045
+	set response.status = $CASE($$$SessionLanguage, "ru":"Ошибка", :"Error")
+	set response.message = $CASE($$$SessionLanguage, "ru":"Пара не найдена по фамилиям спортсменов в базе данных WDSF.", :"Couple not found by athlete's surname in the WDSF DB.")
+	set response.otherInfo = ##class(%ZEN.proxyObject).%New()
+	set response.otherInfo.errorText = errorText
+	quit response
+]]></Implementation>
+</Method>
+
 <Method name="CoupleSyncFailed">
 <ClassMethod>1</ClassMethod>
 <FormalSpec>coupleId:%String,errorText:%String</FormalSpec>
