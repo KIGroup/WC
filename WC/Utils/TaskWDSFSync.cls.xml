@@ -13,7 +13,7 @@ invokes this method to execute the task.<br>
 In order to execute a real task, override this method in a subclass.]]></Description>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	
+	do ..SyncCompetitions()
 	Quit $$$OK
 ]]></Implementation>
 </Method>
@@ -56,6 +56,51 @@ do ##class(WC.Utils.TaskWDSFSync).SyncCompetitions()</Description>
 		TROLLBACK
 		set st = ex.AsStatus()
 		do ##class(WC.Utils.Journal).Create("WDSF Sync Error", "TaskWDSFSync.SyncCompetitions()", $SYSTEM.Status.GetErrorText(st))
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="AddTournamentsForSpecialRecorder">
+<Description>
+do ##class(WC.Utils.TaskWDSFSync).AddTournamentsForSpecialRecorder()</Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set recorder = ##class(WC.Data.Recorder).GetSystemRecorder()	
+	quit:('$ISOBJECT(recorder)) $$$OK
+		
+	try{
+		TSTART
+		
+		set specRecId = recorder.%Id()
+		
+		&sql(DECLARE TrnCur CURSOR FOR
+			 SELECT ID
+			 FROM WC_Data.Tournament
+			 WHERE (DATEDIFF('DAY',NOW(), StartDate) BETWEEN 0 AND 30) AND 
+			 		ID NOT IN (SELECT AvailableTournaments 
+			 				   FROM WC_Data.Recorder_AvailableTournaments 
+			 				   WHERE Recorder = :specRecId))
+		
+		&sql(OPEN TrnCur)
+		for{
+			&sql(FETCH TrnCur INTO :trnId) 
+			quit:(SQLCODE '= 0)
+			
+			set tournament = ##class(WC.Data.Tournament).%OpenId(trnId)
+			do ##class(WC.Data.Recorder).AddAvailableTournament(recorder, tournament) 
+		}
+		
+		&sql(CLOSE TrnCur)
+			
+		
+		TCOMMIT
+	}
+	catch(ex){
+		TROLLBACK
+		set st = ex.AsStatus()
 	}
 	
 	quit st

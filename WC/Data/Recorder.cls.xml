@@ -120,6 +120,17 @@
 ]]></Implementation>
 </Method>
 
+<Method name="GetSystemRecorder">
+<ClassMethod>1</ClassMethod>
+<ReturnType>Recorder</ReturnType>
+<Implementation><![CDATA[
+	set id = ""
+	set login = $GET(^WC.Data.Settings("SystemRecorderLogin"))
+	&sql(SELECT ID INTO :id FROM WC_Data.Recorder WHERE Login = :login)
+	quit ..%OpenId(id)
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^WC.Data.RecorderD</DataLocation>
