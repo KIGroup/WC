@@ -49,6 +49,8 @@
 <!-- Get all years -->
 <Route Method="GET" Url="/year" Call="WC.Web.JsonAdmin:GetCompetitionYears"/>
 
+<!-- Get all competition countries in the year -->
+<Route Method="GET" Url="/competition/year/:year/country" Call="WC.Web.JsonAdmin:GetCompetitionYearCountries"/>
 
 <!-- ======================================================================================================================= -->
 <!-- Participant                                                                                                 Participant -->
@@ -60,6 +62,8 @@
 <!-- Get list of participants -->
 <Route Method="GET" Url="/participant/:id" Call="WC.Web.JsonAdmin:GetParticipant"/>
 
+<!-- Get list of participants for GRID -->
+<Route Method="GET" Url="/grid/participant" Call="WC.Web.JsonAdmin:GetParticipantsForGrid"/>
 
 <!-- ======================================================================================================================= -->
 <!-- Person                                                                                                           Person -->

@@ -81,11 +81,12 @@
       <div class="navbar" ng-init="menu.shortMenu=true">
         <div class="navbar-inner">
           <div class="container">  
-            <a class="brand" ng-href="{{menu.pages.tournaments.url}}" ng-bind="'WDSF Controller'|localize"></a>
+            <a class="brand" ng-href="{{menu.pages.competitions.url}}" ng-bind="'WDSF Controller'|localize"></a>
   
             <div class="nav-responsive-collapse">
               <ul class="nav">
-              	<li ng-show="false" ng-class="menu.pages.tournaments.id==menu.pages.selected.id ? 'active' : ''"><a ng-href="{{menu.pages.tournaments.url}}" ng-bind="menu.pages.tournaments.name" ng-click="menu.selectMenu(menu.pages.tournaments)"></a></li>
+              	<li ng-class="menu.pages.competitions.id==menu.pages.selected.id ? 'active' : ''"><a ng-href="{{menu.pages.competitions.url}}" ng-bind="menu.pages.competitions.name" ng-click="menu.selectMenu(menu.pages.competitions)"></a></li>
+              	<li ng-class="menu.pages.participants.id==menu.pages.selected.id ? 'active' : ''"><a ng-href="{{menu.pages.participants.url}}" ng-bind="menu.pages.participants.name" ng-click="menu.selectMenu(menu.pages.participants)"></a></li>
               	<li ng-show="menu.admin" ng-class="menu.pages.recorders.id==menu.pages.selected.id ? 'active' : ''"><a ng-href="{{menu.pages.recorders.url}}" ng-bind="menu.pages.recorders.name" ng-click="menu.selectMenu(menu.pages.recorders)"></a></li>
               </ul>
             
@@ -121,7 +122,8 @@
     </script>
    
     <script language="javascript" src="js/controllers/MainCtrl.js"></script>
-    <script language="javascript" src="js/controllers/TournamentsCtrl.js"></script>
+    <script language="javascript" src="js/controllers/CompetitionsCtrl.js"></script>
+    <script language="javascript" src="js/controllers/ParticipantsCtrl.js"></script>
     <script language="javascript" src="js/controllers/RecordersCtrl.js"></script>
     <script language="javascript" src="js/controllers/RecorderCtrl.js"></script>
 
@@ -130,6 +132,7 @@
     <script language="javascript" src="js/services/RecorderSrvc.js"></script>
     <script language="javascript" src="js/services/TournamentSrvc.js"></script>
     <script language="javascript" src="js/services/CompetitionSrvc.js"></script>
+    <script language="javascript" src="js/services/ParticipantSrvc.js"></script>
     <script language="javascript" src="js/services/UtilsSrvc.js"></script>
 
     <script language="javascript" src="js/directives/stcalert.js"></script>

@@ -19,7 +19,8 @@ controllersModule.controller('MainCtrl', function($scope, $timeout, $cookies, $f
     
    $scope.menu.pages = {
 	   					 selected: {},
-	    				 tournaments: {id: 'tournaments', url: '#/tournaments', name: $filter('localize')('Tournaments')},
+	    				 competitions: {id: 'competitions', url: '#/competitions', name: $filter('localize')('Competitions')},
+	    				 participants: {id: 'participants', url: '#/participants', name: $filter('localize')('Participants')},
 	    				 recorders: {id: 'recorders', url: '#/recorders', name: $filter('localize')('Recorders')},
                         }; 
     

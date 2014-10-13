@@ -13,10 +13,29 @@ var mainModule         = angular.module('mainModule', ['localizationModule', 'fi
 
 mainModule.config(['$routeProvider', function($routeProvider) {
 	// All tournaments
-	$routeProvider.when('/tournaments', {templateUrl: 'partials/tournaments.csp', controller: 'TournamentsCtrl'});
-	$routeProvider.when('/recorders', {templateUrl: 'partials/recorders.csp', controller: 'RecordersCtrl'});
-	$routeProvider.when('/recorder/:id', {templateUrl: 'partials/recorder.csp', controller: 'RecorderCtrl'});
-	$routeProvider.when('/recorder', {templateUrl: 'partials/recorder.csp', controller: 'RecorderCtrl'});
+	$routeProvider.when('/competitions', {
+		templateUrl: 'partials/competitions.csp', 
+		controller: 'CompetitionsCtrl'});
+		
+	$routeProvider.when('/competition/:cmpId/participants', {
+		templateUrl: 'partials/participants.csp', 
+		controller: 'ParticipantsCtrl'});
+	
+	$routeProvider.when('/participants', {
+		templateUrl: 'partials/participants.csp', 
+		controller: 'ParticipantsCtrl'});
+	
+	$routeProvider.when('/recorders', {
+		templateUrl: 'partials/recorders.csp', 
+		controller: 'RecordersCtrl'});
+		
+	$routeProvider.when('/recorder/:id', {
+		templateUrl: 'partials/recorder.csp', 
+		controller: 'RecorderCtrl'});
+		
+	$routeProvider.when('/recorder', {
+		templateUrl: 'partials/recorder.csp', 
+		controller: 'RecorderCtrl'});
 	
     $routeProvider.otherwise({redirectTo: '/recorders'});
 }]);]]></CSP>

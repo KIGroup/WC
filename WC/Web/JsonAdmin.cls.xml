@@ -526,7 +526,7 @@ Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014
 			set where = "WHERE "_$E(where, 1, *-5)_" "
 		}
 		
-		set sql = "SELECT TOP 300 ID "_
+		set sql = "SELECT TOP 1000 ID "_
 				  "FROM WC_Data.Competition "_
 				  where_
 				  "ORDER BY StartDate, WDSFLastModified"
@@ -565,6 +565,7 @@ Method="GET" Url="/grid/competition". Filter example params: ?first=1&last=10&sq
 	
 	try{
 		set tournamentId = $GET(%request.Data("tournamentId", 1))
+		set year = $GET(%request.Data("year", 1))
 		set params = ##class(%ZEN.proxyObject).%New()
 		set params.first = $GET(%request.Data("first", 1), 1)
 		set params.last = $GET(%request.Data("last", 1), 10)
@@ -573,7 +574,21 @@ Method="GET" Url="/grid/competition". Filter example params: ?first=1&last=10&sq
 		set params.isDown = $GET(%request.Data("isDown", 1), $$$YES)
 		set params.sqlName = $GET(%request.Data("sqlName", 1), "Discipline->Name")
 		
-      	$$$THROWONERROR(st, ..WriteJsonForGrid("SELECT ID FROM WC_Data.Competition", "WC.Data.Competition", params))
+		set whereRequired = ""
+		if (year '= ""){
+			set whereRequired =  "DATEPART('year', StartDate) = '"_..ParseParameter(year)_"' AND "
+		}
+		
+		if (tournamentId '= ""){
+			set whereRequired =  whereRequired_" Tournament = '"_..ParseParameter(tournamentId)_"' AND "
+		}
+		
+		if (whereRequired '= ""){
+			// remove last " AND "
+			set whereRequired = $E(whereRequired, 1, *-5)
+		}
+		
+      	$$$THROWONERROR(st, ..WriteJsonForGrid("SELECT ID FROM WC_Data.Competition", "WC.Data.Competition", params, whereRequired))
 	}
 	catch(ex){
 		set st = ex.AsStatus()
@@ -607,6 +622,37 @@ Method="GET" Url="/year"</Description>
 	}
 	
 	&sql(CLOSE CursYear)
+	
+	quit proxy.%ToJSON()
+]]></Implementation>
+</Method>
+
+<Method name="GetCompetitionYearCountries">
+<Description>
+Get all countries
+Method="GET" Url="/competition/year/:year/country"</Description>
+<ClassMethod>1</ClassMethod>
+<FormalSpec>year:%String</FormalSpec>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set proxy = ##class(%ZEN.proxyObject).%New()
+	set proxy.children = ##class(%ListOfDataTypes).%New()
+	
+	&sql(DECLARE CmpCountry CURSOR FOR 
+		 	SELECT DISTINCT Country
+			FROM WC_Data.Competition
+			WHERE DATEPART('year', StartDate) = :year
+			ORDER BY Country->Name)	
+		
+	&sql(OPEN CmpCountry)
+	for  
+	{	
+		&sql(FETCH CmpCountry INTO :id) 
+		quit:(SQLCODE '= 0)
+		do proxy.children.Insert(##class(WC.Data.Country).%OpenId(id).ConvertToProxyObject())	
+	}
+	
+	&sql(CLOSE CmpCountry)
 	
 	quit proxy.%ToJSON()
 ]]></Implementation>
@@ -697,6 +743,56 @@ Method="GET" Url="/participant". Filter example params: ?competitionId=1"</Descr
 		do statement.%Close()
 		
 		do proxy.%ToJSON()
+	}
+	catch(ex){
+		set st = ex.AsStatus()
+	}
+	
+	quit st
+]]></Implementation>
+</Method>
+
+<Method name="GetParticipantsForGrid">
+<Description><![CDATA[
+Get list of participants for GRID
+Method="GET" Url="/grid/participant". Filter example params: ?first=1&last=10&sqlName=StartDate&isDown=1&searchSqlName=Title&searchText=Hello ]]></Description>
+<ClassMethod>1</ClassMethod>
+<ReturnType>%Status</ReturnType>
+<Implementation><![CDATA[
+	set st = $$$OK
+	
+	try{
+		set competitionId = $GET(%request.Data("competitionId", 1))
+		set country = $GET(%request.Data("country", 1))
+		set year = $GET(%request.Data("year", 1))
+		
+		set params = ##class(%ZEN.proxyObject).%New()
+		set params.first = $GET(%request.Data("first", 1), 1)
+		set params.last = $GET(%request.Data("last", 1), 10)
+		set params.searchSqlName = $GET(%request.Data("searchSqlName", 1), "Competition")
+		set params.searchText = $GET(%request.Data("searchText", 1), "")
+		set params.isDown = $GET(%request.Data("isDown", 1), $$$YES)
+		set params.sqlName = $GET(%request.Data("sqlName", 1), "Competition")
+		
+		set whereRequired = ""
+		
+		if (competitionId '= ""){
+			set whereRequired =  whereRequired_"Competition = '"_..ParseParameter(competitionId)_"' AND "
+		}
+		elseif (year '= ""){
+			set whereRequired = whereRequired_"DATEPART('year', Competition->StartDate) = '"_..ParseParameter(year)_"' AND "
+		
+			if (country '= ""){
+				set whereRequired = whereRequired_"Competition->Country->Name = '"_..ParseParameter(country)_"' AND "
+			}
+		}
+		
+		if (whereRequired '= ""){
+			// remove last " AND "
+			set whereRequired = $E(whereRequired, 1, *-5)
+		}
+		
+      	$$$THROWONERROR(st, ..WriteJsonForGrid("SELECT ID FROM WC_Data.Participant", "WC.Data.Participant", params, whereRequired))
 	}
 	catch(ex){
 		set st = ex.AsStatus()

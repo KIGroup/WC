@@ -14,6 +14,7 @@ In order to execute a real task, override this method in a subclass.]]></Descrip
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
 	do ..SyncCompetitions()
+	do ..AddTournamentsForSpecialRecorder()
 	Quit $$$OK
 ]]></Implementation>
 </Method>
@@ -68,10 +69,12 @@ do ##class(WC.Utils.TaskWDSFSync).AddTournamentsForSpecialRecorder()</Descriptio
 <ClassMethod>1</ClassMethod>
 <ReturnType>%Status</ReturnType>
 <Implementation><![CDATA[
-	set recorder = ##class(WC.Data.Recorder).GetSystemRecorder()	
-	quit:('$ISOBJECT(recorder)) $$$OK
+	set st = $$$OK
 		
 	try{
+		set recorder = ##class(WC.Data.Recorder).GetSystemRecorder()	
+		return:('$ISOBJECT(recorder)) $$$OK
+		
 		TSTART
 		
 		set specRecId = recorder.%Id()
@@ -79,7 +82,7 @@ do ##class(WC.Utils.TaskWDSFSync).AddTournamentsForSpecialRecorder()</Descriptio
 		&sql(DECLARE TrnCur CURSOR FOR
 			 SELECT ID
 			 FROM WC_Data.Tournament
-			 WHERE (DATEDIFF('DAY',NOW(), StartDate) BETWEEN 0 AND 30) AND 
+			 WHERE (DATEDIFF('DAY',NOW(), StartDate) BETWEEN 0 AND 90) AND 
 			 		ID NOT IN (SELECT AvailableTournaments 
 			 				   FROM WC_Data.Recorder_AvailableTournaments 
 			 				   WHERE Recorder = :specRecId))
@@ -99,7 +102,7 @@ do ##class(WC.Utils.TaskWDSFSync).AddTournamentsForSpecialRecorder()</Descriptio
 		TCOMMIT
 	}
 	catch(ex){
-		TROLLBACK
+		if $TLEVEL > 0 TROLLBACK
 		set st = ex.AsStatus()
 	}
 	

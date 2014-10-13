@@ -86,6 +86,13 @@
 <SqlComputed>1</SqlComputed>
 </Property>
 
+<Property name="ParticipantsCount">
+<Type>%Integer</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {ParticipantsCount} = ##class({%%CLASSNAME}).GetParticipantsCount({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+</Property>
+
 <Index name="WDSFIdIdx">
 <IdKey>1</IdKey>
 <Properties>WDSFId</Properties>
@@ -115,6 +122,7 @@
 	set proxy.lastSyncWDSF = ..LastSyncWDSF
 	set proxy.lastModifiedWDSF = ..WDSFLastModified
 	set proxy.isSolo = ..IsSolo
+	set proxy.participantsCount = ..ParticipantsCount
 	
 	quit proxy
 ]]></Implementation>
@@ -228,6 +236,20 @@
 	}
 	
 	quit $$$NO
+]]></Implementation>
+</Method>
+
+<Method name="GetParticipantsCount">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>competitionId:%String</FormalSpec>
+<ReturnType>%Integer</ReturnType>
+<Implementation><![CDATA[
+	set count = 0
+	&sql(SELECT COUNT(ID) INTO :count
+		 FROM WC_Data.Participant 
+		 WHERE Competition = :competitionId)
+	
+	quit count
 ]]></Implementation>
 </Method>
 

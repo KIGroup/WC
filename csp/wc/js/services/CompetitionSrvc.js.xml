@@ -13,8 +13,17 @@ servicesModule.factory('CompetitionSrvc', function(RESTSrvc, UtilsSrvc) {
     	getYears: function(){
     		return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/year'});
     	},
+    	getCountriesByYear: function(year){
+    		return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/competition/year/'+year+'/country'});
+    	},
         getAllForGrid: function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other){
             return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/grid/competition' + UtilsSrvc.getUrlParametersForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, other)});
+        },
+        getAll: function(filterParams){
+        	return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/competition' + (filterParams ? ('?' + filterParams) : '')});
+        },
+        getById: function(id){
+        	return RESTSrvc.getPromise({method: 'GET', url: AppSettings.admin + '/competition/' + id});
         }
     }
 });

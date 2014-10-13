@@ -96,24 +96,35 @@
     <div class="modal-body">
     	<form name="form_modal" ng-submit="trnTable.modal.addTournament()">
 	    	<div class="row-fluid">
-			    <div class="span4">
-			        <div class="control-group">
-			            <label class="control-label" ng-bind="('Year'|localize) + '*'"></label>
-			            <div class="controls">
-			                <select class="span12" ng-model="trnTable.modal.year" ng-options="year as year for year in trnTable.modal.years" ng-change="trnTable.modal.loadTournamentsByYear(trnTable.modal.year)" required>
-			                </select>           
-			            </div>
-			        </div>
-			    </div>
-			    <div class="span8">
+	    		<div class="row-fluid">
+				    <div class="span4">
+				        <div class="control-group">
+				            <label class="control-label" ng-bind="('Year'|localize) + '*'"></label>
+				            <div class="controls">
+				                <select class="span12" ng-model="trnTable.modal.year" ng-options="year as year for year in trnTable.modal.years" ng-change="trnTable.modal.getCountries(trnTable.modal.year)"  required>
+				                </select>           
+				            </div>
+				        </div>
+				    </div>
+				    <div class="span8">
+				        <div class="control-group">
+				            <label class="control-label" ng-bind="('Country'|localize) + '*'"></label>
+				            <div class="controls">
+				                <select class="span12" ng-model="trnTable.modal.countryName" ng-options="country.name as country.name for country in trnTable.modal.countries" ng-change="trnTable.modal.loadTournamentsForCombobox(trnTable.modal.year, trnTable.modal.countryName)" ng-disabled="!trnTable.modal.year" required>
+				                </select>           
+				            </div>
+				        </div>
+				    </div>
+				</div>
+				<div class="row-fluid">
 			        <div class="control-group">
 			            <label class="control-label" ng-bind="('Tournament'|localize) + '*'"></label>
 			            <div class="controls">
-			                <select class="span12" ng-model="trnTable.modal.tournamentId" ng-options="trn.id as trn.country + ', ' + trn.types + ', ' + trn.startDate for trn in trnTable.modal.tournaments" ng-disabled="!trnTable.modal.year" required>
+			                <select class="span12" ng-model="trnTable.modal.tournamentId" ng-options="trn.id as trn.startDate + '; ' + trn.types + '; ' + trn.disciplines for trn in trnTable.modal.tournaments" ng-disabled="!trnTable.modal.countryName" required>
 			                </select>           
 			            </div>
 			        </div>
-			    </div>
+			    </div>    
 			    <button type="submit" class="btn btn-primary btn-small" ng-bind="'Add'|localize" ng-disabled="!form_modal.$valid"></button>
 	            <button type="button" class="btn btn-small" ng-click="trnTable.modal.close()" ng-bind="'Cancel'|localize"></button>  
 			</div>

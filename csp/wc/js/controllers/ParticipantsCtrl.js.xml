@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/controllers/ParticipantsCtrl.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//ddc вdd
+
+/*===========================================================================================
+Participants
+===========================================================================================*/
+
+controllersModule.controller('ParticipantsCtrl', function($scope, $routeParams, $location, $filter, UtilsSrvc, CompetitionSrvc, ParticipantSrvc){
+	$scope.menu.selectMenu($scope.menu.pages.participants);
+    
+    if (!$scope.pageStore.participants){
+        $scope.pageStore.participants = {grid:{}};
+    }
+
+
+	$scope.prtTable = {};
+	
+    $scope.init = function(){
+        $scope.prtTable.columns = [
+                          {name: 'Location', sqlName: 'Competition->Country->Name', isSorted: true , isSortable: true, isDown: true, isSearched: false, isSearchable: false},
+                          {name: 'Date', sqlName: 'Competition->StartDate', isSorted: false, isSortable: true, isDown: true, isSearched: true, isSearchable: true},
+                          {name: 'Man / Woman', sqlName: '', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
+                          {name: 'Country', sqlName: '', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Age group', sqlName: '', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Created', sqlName: 'CreatedTS', isSorted: false, isSortable: false, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Recorder', sqlName: 'Recorder->Name', isSorted: false, isSortable: false, isDown: true, isSearched: false, isSearchable: false}];
+        
+        $scope.prtTable.properties = [
+        				  {name:'competition.fullLocation',
+                            calculate: function(item){
+                                item.competition.fullLocation = item.competition.country + ', ' + item.competition.location;
+                            }},
+                          {name:'competition.date', filter: 'date', filterParam: $filter('localize')('d MMMM y')},
+                          {name:'prtFullName',
+                            calculate: function(item){
+                                if (item.couple){
+                                    item.prtFullName = item.couple.man.surname + ' ' + item.couple.man.name + '\n' + item.couple.woman.surname + ' ' + item.couple.woman.name;
+                                    item.prtCountries = item.couple.man.country + '\n' + item.couple.woman.country;
+                                    item.prtAgeGroup = item.couple.ageGroup;
+                                }
+                                else{
+                                    item.prtFullName = item.athlete.surname + ' ' + item.athlete.name;
+                                    item.prtCountries = item.athlete.country;
+                                    item.prtAgeGroup = item.athlete.ageGroup;
+                                }
+                            }},
+                          {name:'prtCountries'},
+                          {name:'prtAgeGroup'},
+                          {name:'created'},
+                          {name:'recorder'}];  
+
+        $scope.prtTable.pageSize = 20;
+        $scope.prtTable.pageCurr = 1;
+        $scope.prtTable.itemsTotal = 0;
+        $scope.prtTable.selectedItems = [];
+        $scope.prtTable.multiSelectMode = false;
+        $scope.prtTable.forciblyUpdate = 0;
+    };
+     
+    $scope.prtTable.loadItems = function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText){   
+        var otherFilter = 'year=' + $scope.pageStore.participants.grid.filterYear;
+        
+        if ($scope.pageStore.participants.grid.filterCountryName){
+            otherFilter += '&country=' + $scope.pageStore.participants.grid.filterCountryName;
+        }
+
+        if ($scope.pageStore.participants.grid.filterCmpId){
+            otherFilter += '&competitionId=' + $scope.pageStore.participants.grid.filterCmpId;
+        }
+
+        ParticipantSrvc.getAllForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, otherFilter).then(
+            function(data){
+	            data = data.children;
+                $scope.prtTable.pageTotal = Math.ceil(data.itemsTotal / pageSize);
+                $scope.prtTable.itemsTotal = data.itemsTotal;
+                $scope.prtTable.items = data.items;
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.prtTable.onSelect = function(item){
+        if (!item)  return;
+        console.log(item);
+    };
+
+    $scope.prtTable.onSelectCell = function(item, property){ 
+        if (!item) return;
+        property.onClickCell(item.id);
+    };
+ 
+    $scope.prtTable.refresh = function(){ 
+        $scope.prtTable.forciblyUpdate++; 
+    };
+
+    $scope.getYears = function(){   
+        CompetitionSrvc.getYears().then(
+            function(data){
+                $scope.years = data.children;
+                
+                if (!$scope.pageStore.participants.grid.filterYear){
+                    $scope.pageStore.participants.grid.filterYear = $scope.years.length > 0 ? new Date().getFullYear() : '';
+                };
+                
+                $scope.loadCountriesForCombobox($scope.pageStore.participants.grid.filterYear);
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.loadCountriesForCombobox = function(year){   
+        CompetitionSrvc.getCountriesByYear(year).then(
+            function(data){
+                $scope.countries = data.children;
+                if (!$scope.pageStore.participants.grid.filterCountryName){
+                    $scope.prtTable.refresh();
+                }
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.loadCompetitionsForCombobox = function(year, countryName){   
+        CompetitionSrvc.getAll('from=' + year + '-01-01&to=' + year + '-12-31'+ '&country=' + countryName).then(
+            function(data){
+                $scope.competitions = data.competitions;
+                if (!$scope.pageStore.participants.grid.cmpId){
+                    $scope.prtTable.refresh();
+                }
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.loadCompetitionById = function(id){   
+        CompetitionSrvc.getById(id).then(
+            function(data){
+                $scope.competition = data;
+                $scope.pageStore.participants.grid.filterCmpId = id;
+                $scope.pageStore.participants.grid.countryName = $scope.competition.country; 
+                $scope.pageStore.participants.grid.filterYear = $scope.competition.date.split('-')[0];
+                $scope.prtTable.refresh();
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.init();
+
+    if ($routeParams.cmpId){
+        $scope.loadCompetitionById($routeParams.cmpId);   
+    }
+     
+    $scope.getYears();
+});
+
+]]></CSP>
+</Export>

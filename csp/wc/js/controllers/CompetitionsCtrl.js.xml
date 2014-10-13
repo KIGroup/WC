@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Export generator="Cache" version="25">
+<CSP name="wc/js/controllers/CompetitionsCtrl.js" application="/csp/wdsfcontroller/"><![CDATA[
+'use strict';
+//ddc вd
+
+/*===========================================================================================
+Competitions
+===========================================================================================*/
+
+controllersModule.controller('CompetitionsCtrl', function($scope, $routeParams, $location, $filter, UtilsSrvc, CompetitionSrvc, TournamentSrvc){
+	$scope.menu.selectMenu($scope.menu.pages.competitions);
+    
+    if (!$scope.pageStore.competitions){
+        $scope.pageStore.competitions = {grid:{}};
+    }
+	 
+	$scope.cmpTable = {};
+	$scope.trnTable = {modal:{}};
+	
+    $scope.init = function(){
+        $scope.cmpTable.columns = [
+                          {name: 'Date', sqlName: 'StartDate', isSorted: true , isSortable: true, isDown: true, isSearched: false, isSearchable: false},
+                          {name: 'Status', sqlName: 'CStatus->Name', isSorted: false, isSortable: true, isDown: true, isSearched: true, isSearchable: true},
+                          {name: 'Location', sqlName: 'Country->Name', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: false},
+                          {name: 'Type', sqlName: 'Type->Name', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Discipline', sqlName: 'Discipline->Name', isSorted: false, isSortable: true, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Age group', sqlName: '', isSorted: false, isSortable: false, isDown: true, isSearched: false, isSearchable: true},
+                          {name: 'Participants', sqlName: '', isSorted: false, isSortable: false, isDown: true, isSearched: false, isSearchable: false, captionStyle: {textAlign: 'center', width: '120px'}}];
+        
+        $scope.cmpTable.properties = [
+        				  {name:'date', filter: 'date', filterParam: $filter('localize')('d MMMM y')},
+                          {name:'status'},
+                          {name:'fullLocation',
+                            calculate: function(item){
+                                item.fullLocation = item.country + ', ' + item.location;
+                            }},
+                          {name:'type'},
+                          {name:'discipline'},
+                          {name:'ageGroup'},
+                          {name:'participantsString', cellStyle: {textAlign: 'center'}, cellSelectable: true, cellTitle: $filter('localize')('Watch list of participants'),
+                            onClickCell: function(item){
+                                $location.path("/competition/" + item.id + "/participants"); 
+                            },
+                            getCssClass: function(item){ 
+                                return 'cellLink';
+                            }, 
+                            calculate: function(item){
+                                item.participantsString =  item.participantsCount + ' »';
+                            }}];  
+
+        $scope.cmpTable.pageSize = 20;
+        $scope.cmpTable.pageCurr = 1;
+        $scope.cmpTable.itemsTotal = 0;
+        $scope.cmpTable.selectedItems = [];
+        $scope.cmpTable.multiSelectMode = false;
+        $scope.cmpTable.forciblyUpdate = 0;
+        //$scope.cmpTable.refresh();
+    };
+
+    $scope.cmpTable.loadItems = function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText){   
+        var otherFilter = 'year=' + $scope.pageStore.competitions.grid.filterYear;
+        if ($scope.pageStore.competitions.grid.filterTrnId){
+            otherFilter += '&tournamentId=' + $scope.pageStore.competitions.grid.filterTrnId;
+        }
+
+        CompetitionSrvc.getAllForGrid(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText, otherFilter).then(
+            function(data){
+	            data = data.children;
+                $scope.cmpTable.pageTotal = Math.ceil(data.itemsTotal / pageSize);
+                $scope.cmpTable.itemsTotal = data.itemsTotal;
+                $scope.cmpTable.items = data.items;
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.cmpTable.onSelect = function(item){
+        if (!item)  return;
+        console.log(item);
+    };
+
+    $scope.cmpTable.onSelectCell = function(item, property){ 
+        if (!item) return;
+        property.onClickCell(item);
+    };
+ 
+    $scope.cmpTable.refresh = function(){ 
+        $scope.cmpTable.forciblyUpdate++; 
+    };
+
+    $scope.getYears = function(){   
+        CompetitionSrvc.getYears().then(
+            function(data){
+                $scope.years = data.children;
+                $scope.pageStore.competitions.grid.filterYear = $scope.years.length > 0 ? $scope.years[$scope.years.length-1] : '';
+                $scope.loadTournamentsForCombobox($scope.pageStore.competitions.grid.filterYear);
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.loadTournamentsForCombobox = function(year){   
+        TournamentSrvc.getAll('from=' + year + '-01-01&to=' + year + '-12-31').then(
+            function(data){
+                $scope.tournaments = data.tournaments;
+                $scope.cmpTable.refresh();
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.init();
+    $scope.getYears();
+});
+
+]]></CSP>
+</Export>

@@ -173,6 +173,7 @@ controllersModule.controller('RecordersCtrl', function($scope, $routeParams, $lo
 	    $scope.trnTable.modal.visible = true;
 	    $scope.trnTable.modal.year = null;
 	    $scope.trnTable.modal.tournamentId = null;
+	    $scope.trnTable.modal.countryName = null;
     };
 
     $scope.trnTable.remove = function(item){
@@ -193,11 +194,11 @@ controllersModule.controller('RecordersCtrl', function($scope, $routeParams, $lo
     
 
     /// 
-    ///
+    /// 
     /// Modal window - add tournament for recorder
     ///
     /// 
-    $scope.trnTable.modal.getYears = function(pageCurr, pageSize, sqlName, isDown, searchSqlName, searchText){   
+    $scope.trnTable.modal.getYears = function(){   
         CompetitionSrvc.getYears().then(
             function(data){
                 $scope.trnTable.modal.years = data.children;
@@ -207,8 +208,20 @@ controllersModule.controller('RecordersCtrl', function($scope, $routeParams, $lo
             });
     };
 
-    $scope.trnTable.modal.loadTournamentsByYear = function(year){   
-        TournamentSrvc.getAll('from=' + year + '-01-01&to=' + year + '-12-31&notrecorderId=' + $scope.recTable.selectedItems[0].id).then(
+    $scope.trnTable.modal.getCountries = function(year){   
+        CompetitionSrvc.getCountriesByYear(year).then(
+            function(data){
+                $scope.trnTable.modal.countryName = '';
+                $scope.trnTable.modal.tournamentId = '';
+                $scope.trnTable.modal.countries = data.children;
+            },
+            function(data){
+                $scope.alert = UtilsSrvc.getAlert('Attention!', data, 'error', true);
+            });
+    };
+
+    $scope.trnTable.modal.loadTournamentsForCombobox = function(year, countryName){   
+        TournamentSrvc.getAll('from=' + year + '-01-01&to=' + year + '-12-31&notrecorderId=' + $scope.recTable.selectedItems[0].id + '&country=' + countryName).then(
             function(data){
                 $scope.trnTable.modal.tournaments = data.tournaments;
             },
