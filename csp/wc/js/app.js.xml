@@ -37,6 +37,6 @@ mainModule.config(['$routeProvider', function($routeProvider) {
 		templateUrl: 'partials/recorder.csp', 
 		controller: 'RecorderCtrl'});
 	
-    $routeProvider.otherwise({redirectTo: '/recorders'});
+    $routeProvider.otherwise({redirectTo: '/competitions'});
 }]);]]></CSP>
 </Export>

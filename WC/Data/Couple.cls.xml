@@ -205,6 +205,12 @@
 ]]></Implementation>
 </Method>
 
+<Method name="GetFullName">
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..Man.GetFullName()_" - "_..Woman.GetFullName()
+]]></Implementation>
+</Method>
+
 <Storage name="Default">
 <Type>%Library.CacheStorage</Type>
 <DataLocation>^WC.Data.CoupleD</DataLocation>

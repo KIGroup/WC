@@ -529,7 +529,7 @@ Method="GET" Url="/competition". Filter example params: ?from=2014-01-21&to=2014
 		set sql = "SELECT TOP 1000 ID "_
 				  "FROM WC_Data.Competition "_
 				  where_
-				  "ORDER BY StartDate, WDSFLastModified"
+				  "ORDER BY StartDate, Type->Name, WDSFLastModified"
 		
 		set ^temp("cmpSql") = sql
 		set statement = ##class(%SQL.Statement).%New()	

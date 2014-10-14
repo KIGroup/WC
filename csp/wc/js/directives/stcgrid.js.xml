@@ -118,7 +118,7 @@ directivesModule.directive('stcgrid', function(){
                         $scope.selectedItems[idx[0]] = $scope.items[i];
                     }
                 }
-            });
+            });  
 
             $scope.getRowClass = function(rowClass){
                 //if ($scope.selectable)

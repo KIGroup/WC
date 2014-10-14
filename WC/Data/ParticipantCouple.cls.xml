@@ -25,6 +25,11 @@
 	set proxy.couple = ..Couple.ConvertToProxyObject()
 	set proxy.created = ..CreatedTS
 	
+		
+	if (##class(Settings).CurrentUserIsAdmin() = $$$OK){
+		set proxy.recorder = ..Recorder.Name
+	}
+	
 	quit proxy
 ]]></Implementation>
 </Method>

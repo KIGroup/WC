@@ -123,7 +123,7 @@
 	set proxy.lastModifiedWDSF = ..WDSFLastModified
 	set proxy.isSolo = ..IsSolo
 	set proxy.participantsCount = ..ParticipantsCount
-	
+
 	quit proxy
 ]]></Implementation>
 </Method>

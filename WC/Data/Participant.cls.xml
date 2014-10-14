@@ -4,6 +4,13 @@
 <Super>%Persistent</Super>
 <TimeCreated>63372,4871.930434</TimeCreated>
 
+<Property name="FullName">
+<Type>%String</Type>
+<Calculated>1</Calculated>
+<SqlComputeCode>set {FullName} = ##class({%%CLASSNAME}).GetFullName({%%ID})</SqlComputeCode>
+<SqlComputed>1</SqlComputed>
+</Property>
+
 <Property name="Recorder">
 <Type>Recorder</Type>
 <Required>1</Required>
@@ -40,6 +47,19 @@
 	}
 	
 	quit $$$NULLOREF
+]]></Implementation>
+</Method>
+
+<Method name="GetFullName">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>prtId:%String</FormalSpec>
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[
+	set fullName = ""
+	set prt = ..%OpenId(prtId)
+	quit $CASE($CLASSNAME(prt), "WC.Data.ParticipantCouple" : prt.Couple.GetFullName(),
+								"WC.Data.ParticipantSingle" : prt.Athlete.GetFullName(),
+															: "-")
 ]]></Implementation>
 </Method>
 

@@ -240,6 +240,12 @@
 ]]></Implementation>
 </Method>
 
+<Method name="GetFullName">
+<ReturnType>%String</ReturnType>
+<Implementation><![CDATA[	quit ..Surname_" "_..Name
+]]></Implementation>
+</Method>
+
 <UDLText name="T">
 <Content><![CDATA[
 /*
