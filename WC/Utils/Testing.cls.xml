@@ -4,6 +4,28 @@
 <Abstract>1</Abstract>
 <TimeCreated>63372,50374.343623</TimeCreated>
 
+<Method name="FFFF">
+<ClassMethod>1</ClassMethod>
+<Implementation><![CDATA[
+	TSTART
+	set manSurname = "Victor"
+	set womanSurname = "Maria"
+	set coupleWDSF = ##class(%ZEN.proxyObject).%New()
+	set coupleWDSF.name = "Victor - Maria"
+	if ($FIND($P(coupleWDSF.name, " - ", 1), manSurname) > 0) && ($FIND($P(coupleWDSF.name, " - ", 2), womanSurname) > 0){
+		d ..AAAA("rls-42144")
+	}
+	TCOMMIT
+]]></Implementation>
+</Method>
+
+<Method name="AAAA">
+<ClassMethod>1</ClassMethod>
+<FormalSpec>id:%String</FormalSpec>
+<Implementation><![CDATA[	w !,"id=",id,!
+]]></Implementation>
+</Method>
+
 <Method name="TestRegistration">
 <Description>
 do ##class(WC.Utils.Testing).TestRegistration()</Description>

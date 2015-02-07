@@ -11,12 +11,9 @@ Competitions
 controllersModule.controller('CompetitionsCtrl', function($scope, $routeParams, $location, $filter, UtilsSrvc, CompetitionSrvc, TournamentSrvc){
 	$scope.menu.selectMenu($scope.menu.pages.competitions);
     
-    if (!$scope.pageStore.competitions){
-        $scope.pageStore.competitions = {grid:{}};
-    }
-	 
+   	$scope.pageStore.competitions = {grid:{}};
+    
 	$scope.cmpTable = {};
-	$scope.trnTable = {modal:{}};
 	
     $scope.init = function(){
         $scope.cmpTable.columns = [
@@ -94,7 +91,7 @@ controllersModule.controller('CompetitionsCtrl', function($scope, $routeParams, 
         CompetitionSrvc.getYears().then(
             function(data){
                 $scope.years = data.children;
-                $scope.pageStore.competitions.grid.filterYear = $scope.years.length > 0 ? $scope.years[$scope.years.length-1] : '';
+                $scope.pageStore.competitions.grid.filterYear = $scope.years.length > 0 ? new Date().getFullYear() : '';
                 $scope.loadTournamentsForCombobox($scope.pageStore.competitions.grid.filterYear);
             },
             function(data){

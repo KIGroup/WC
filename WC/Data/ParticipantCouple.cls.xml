@@ -69,7 +69,7 @@
 	}
 	
 	// Check allowed age group for competition
-	if (competition.AgeGroup.AllowedToDance.FindOref(couple.AgeGroup) = ""){
+	if (couple.AgeGroup.AllowedToDance.FindOref(competition.AgeGroup) = ""){
 		set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Couple_AgeGroup_NotAllowedForCompetition")
 		set response = ##class(WC.Utils.Response).CoupleAgeGroupNotAllowedForCompetition(competition, couple)
 		quit participant	

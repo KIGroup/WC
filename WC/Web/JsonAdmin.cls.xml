@@ -902,14 +902,13 @@ Method="GET" Url="/couple?manFullName=1111&womanFullName=22222"]]></Description>
 			 	   %UPPER(Woman->Name) = %UPPER(TRIM(BOTH ' ' FROM :womanName)))
 		
 		if (SQLCODE '= 0){
-			w !,manFullName
 			set couples = ##class(WC.Wdsf.API).GetCouples("", manFullName,,,.st)
 			set loadingCount = 0
 			for i=1:1:couples.Count(){
 				set coupleWDSF = couples.GetAt(i)
-				w !, "i="_i_". Couple name = "_coupleWDSF.name
 				
 				if ($P(coupleWDSF.name, " - ", 1) [ manSurname) && ($P(coupleWDSF.name, " - ", 2) [ womanSurname){
+				
 					set couple = ##class(WC.Data.Couple).SyncWDSF(coupleWDSF.id, 40000, .st)
 					$$$THROWONERROR(st, st)
 					

@@ -50,7 +50,7 @@
 	}
 	
 	// Check allowed age group for competition
-	if (competition.AgeGroup.AllowedToDance.FindOref(athlete.AgeGroup) = ""){
+	if (athlete.AgeGroup.AllowedToDance.FindOref(competition.AgeGroup) = ""){
 		set st = ##class(WC.Utils.Msg).GetErrorStatus("error_Athlete_AgeGroup_NotAllowedForCompetition")
 		set response = ##class(WC.Utils.Response).AthleteAgeGroupNotAllowedForCompetition(competition, athlete)
 		quit participant	

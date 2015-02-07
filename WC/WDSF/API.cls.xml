@@ -25,6 +25,9 @@
 	 	$$$TOE(st, req.Send($zconvert(pMethod, "u"), pUrl))
  		set json = req.HttpResponse.Data.Read(10000000, .st)
  		
+ 		set ^test("json") = json
+ 		set ^test("pUrl") = pUrl
+ 		
  		if (req.HttpResponse.StatusCode '= 200){
  			$$$ThrowStatus(##class(WC.Utils.Msg).GetErrorStatus("error_WDSF_BadStatus", "HTTP Status="_req.HttpResponse.StatusCode))
  		}
