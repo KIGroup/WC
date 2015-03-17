@@ -87,7 +87,7 @@ Method="POST" Url="/registration"</Description>
 		}
 		
 		// Competition. Verify status
-		if (competition.CStatus.Name '= "Registering") {
+		if (competition.CStatus.Name '= "Registering") && (competition.CStatus.Name '= "PreRegistration"){
 			set response = ##class(WC.Utils.Response).CompetitionStatusNotForRegistration(competition)
 			return ##class(WC.Utils.Msg).GetErrorStatus("error_CompetitionStatusNotForRegistration")
 		}
